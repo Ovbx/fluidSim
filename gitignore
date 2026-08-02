@@ -1,0 +1,24 @@
+# Build output
+output/*.exe
+output/*.dll
+output/*.o
+output/*.obj
+
+# VS Code
+.vscode/*
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json
+!.vscode/launch.json
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# Common/ dependencies (GLFW/GLAD/GLM) - typically NOT committed if large/downloaded separately
+# Uncomment if you don't want to track these in git:
+# ../Common/
+
+# PlatformIO (ESP32 side, if added to this repo later)
+.pio/
+.pioenvs/
+.piolibdeps/

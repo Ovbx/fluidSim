@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run fluidSim OpenGL",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/output/main.exe",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+            "preLaunchTask": "build fluidSim",
+            "externalConsole": true
+        }
+    ]
+}
