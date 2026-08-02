@@ -1,0 +1,17 @@
+#pragma once
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include "Vertex.h"
+
+class Mesh {
+public:
+    Mesh(Vertex* vertices, size_t vertexCount, GLuint* indices, size_t indexCount);
+    ~Mesh();
+    void draw();
+private:
+    GLuint m_VBO;
+    GLuint m_VAO;
+    GLuint m_EBO;
+    GLsizei m_indexCount;
+};

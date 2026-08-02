@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Vertex.h"
+#include "Mesh.h"
 
 //vertex stuff
 const char *vertexShaderSource = R"(
@@ -133,40 +134,12 @@ int main()
         1080,
         "OPENGL TEST"
     );
-    //generate buffer object using vao and vbo
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-
-    //bind the generated buffesr
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(Vertex), 
-        (void*)0
+    Mesh cubeMesh(
+        vertices,
+        8,
+        indices,
+        36
     );
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(Vertex),
-        (void*)offsetof(Vertex, color)
-    );
-    glEnableVertexAttribArray(1);
-
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     Shader shader(
         vertexShaderSource,
@@ -195,9 +168,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.setMat4("view", camera.getViewMatrix());
         shader.setMat4("projection", camera.getProjectionMatrix());
-        glBindVertexArray(VAO);
         shader.setMat4("model", glm::mat4(1.0f));
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        cubeMesh.draw();
         window.swapBuffers();
         window.pollEvents();
     }
