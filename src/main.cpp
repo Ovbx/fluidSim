@@ -28,18 +28,28 @@ void main()
     ourColor = aColor;
 }
 )";
-const char *fragmentShaderSource =  R"(
+const char *fillFragmentShaderSource = R"(
     #version 330 core
     out vec4 FragColor;
     in vec3 ourColor;
 
     void main()
     {
-        FragColor = vec4(ourColor, 1.0);
+        FragColor = vec4(ourColor, 0.4);
+    }
+)";
+
+const char *outlineFragmentShaderSource = R"(
+    #version 330 core
+    out vec4 FragColor;
+
+    void main()
+    {
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
 )";
 //variables
-float r = 0.2f;
+float r = 0.0f;
 float storedR = r;
 
 Vertex vertices[] = {
@@ -61,6 +71,14 @@ GLuint indices[] = {
     1,5,6, 6,2,1,   // right face
     3,2,6, 6,7,3,   // top face
     0,1,5, 5,4,0    // bottom face
+};
+GLuint edgeIndices[] = {
+    // bottom face edges
+    0,1, 1,2, 2,3, 3,0,
+    // top face edges
+    4,5, 5,6, 6,7, 7,4,
+    // vertical edges connecting bottom to top
+    0,4, 1,5, 2,6, 3,7
 };
 GLuint VAO;
 GLuint VBO;
@@ -84,7 +102,6 @@ void processInput(GLFWwindow* window)
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
         std::cout << "clicked\n";
-        r = 0.5f;
     }
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
         r = storedR;
@@ -134,21 +151,34 @@ int main()
         1080,
         "OPENGL TEST"
     );
+    //cube
     Mesh cubeMesh(
         vertices,
         8,
         indices,
         36
     );
-
+    Mesh cubeOutline(
+        vertices, 
+        8,
+        edgeIndices,
+        24
+    );
+    //shaders
     Shader shader(
         vertexShaderSource,
-        fragmentShaderSource
+        fillFragmentShaderSource
+    );
+    Shader outlineShader(
+        vertexShaderSource,
+        outlineFragmentShaderSource
     );
 
     shader.useProgram();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-
+    //camera
     Camera camera(
         target,
         distance,
@@ -163,13 +193,26 @@ int main()
 
     while(!window.shouldClose()) {
         processInput(handle);
-        float time = (float)glfwGetTime();
-        glClearColor(r, 0.3f, 0.3f, 1.0f);
+        glClearColor(r, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        shader.useProgram();
         shader.setMat4("view", camera.getViewMatrix());
         shader.setMat4("projection", camera.getProjectionMatrix());
         shader.setMat4("model", glm::mat4(1.0f));
-        cubeMesh.draw();
+        cubeMesh.draw(GL_FILL);
+
+        
+        outlineShader.useProgram();
+        outlineShader.setMat4("view", camera.getViewMatrix());
+        outlineShader.setMat4("projection", camera.getProjectionMatrix());
+        outlineShader.setMat4("model", glm::mat4(1.0f));
+        glLineWidth(2.0f);
+        cubeOutline.draw(GL_LINES);
+
+        
+
         window.swapBuffers();
         window.pollEvents();
     }

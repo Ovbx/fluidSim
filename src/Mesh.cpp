@@ -41,7 +41,7 @@ Mesh::~Mesh() {
     glDeleteBuffers(1, &m_VBO);
     glDeleteBuffers(1, &m_EBO);
 }
-void Mesh::draw() {
+void Mesh::draw(GLenum mode) {
     glBindVertexArray(m_VAO);
-    glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(mode, m_indexCount, GL_UNSIGNED_INT, 0);
 }

@@ -8,7 +8,7 @@ class Mesh {
 public:
     Mesh(Vertex* vertices, size_t vertexCount, GLuint* indices, size_t indexCount);
     ~Mesh();
-    void draw();
+    void draw(GLenum mode);
 private:
     GLuint m_VBO;
     GLuint m_VAO;
