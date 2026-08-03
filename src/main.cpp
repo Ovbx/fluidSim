@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "Vertex.h"
 #include "Mesh.h"
+#include "Renderer.h"
 
 //vertex stuff
 const char *vertexShaderSource = R"(
@@ -35,7 +36,7 @@ const char *fillFragmentShaderSource = R"(
 
     void main()
     {
-        FragColor = vec4(ourColor, 0.4);
+        FragColor = vec4(ourColor, 0.1f);
     }
 )";
 
@@ -145,6 +146,7 @@ int main()
         1080,
         "OPENGL TEST"
     );
+
     //cube
     Mesh cubeMesh(
         vertices,
@@ -158,6 +160,7 @@ int main()
         edgeIndices,
         24
     );
+
     //shaders
     Shader shader(
         vertexShaderSource,
@@ -167,11 +170,11 @@ int main()
         vertexShaderSource,
         outlineFragmentShaderSource
     );
-
     shader.useProgram();
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_DEPTH_TEST);
+
+    //rendering
+    initRenderState();
+
     //camera
     Camera camera(
         target,
@@ -190,22 +193,7 @@ int main()
         glClearColor(r, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        shader.useProgram();
-        shader.setMat4("view", camera.getViewMatrix());
-        shader.setMat4("projection", camera.getProjectionMatrix((float) window.getWidth() / window.getHeight()));
-        shader.setMat4("model", glm::mat4(1.0f));
-        cubeMesh.draw(GL_FILL);
-
-        
-        outlineShader.useProgram();
-        outlineShader.setMat4("view", camera.getViewMatrix());
-        outlineShader.setMat4("projection", camera.getProjectionMatrix((float) window.getWidth() / window.getHeight()));
-        outlineShader.setMat4("model", glm::mat4(1.0f));
-        glLineWidth(2.0f);
-        cubeOutline.draw(GL_LINES);
-
-        
+        drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
 
         window.swapBuffers();
         window.pollEvents();
