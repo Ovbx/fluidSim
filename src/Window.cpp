@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <iostream>
 
-Window::Window(int width, int height, const char* title) {
+Window::Window(int width, int height, const char* title) : m_width(width), m_height(height) {
     glfwInit();
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -34,7 +34,6 @@ Window::~Window() {
     glfwDestroyWindow(m_window);
     glfwTerminate();
 }
-
 bool Window::shouldClose() const {
     return glfwWindowShouldClose(m_window);
 }
@@ -51,4 +50,9 @@ GLFWwindow* Window::getHandle() const {
 
 void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+    Window* win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+    if (win) {
+        win->m_width = width;
+        win->m_height = height;
+    }
 }

@@ -47,8 +47,8 @@ void Camera::processMouseScroll(float yOffset) {
 glm::mat4 Camera::getViewMatrix() {
     return m_viewMatrix;
 }
-glm::mat4 Camera::getProjectionMatrix() {
-    return m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearPlane, m_farPlane);
+glm::mat4 Camera::getProjectionMatrix(float aspectRatio) {
+    return m_projectionMatrix = glm::perspective(glm::radians(m_fov), aspectRatio, m_nearPlane, m_farPlane);
 }
 void Camera::updatePosition() {
     //spherical to cartesian coordinates

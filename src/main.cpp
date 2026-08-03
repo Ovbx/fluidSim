@@ -80,17 +80,11 @@ GLuint edgeIndices[] = {
     // vertical edges connecting bottom to top
     0,4, 1,5, 2,6, 3,7
 };
-GLuint VAO;
-GLuint VBO;
-GLuint EBO;
-GLuint vertexShader;
-GLuint fragmentShader;
-GLuint shaderProgram;
 
 //camera variables
 glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
 float distance = 10.0f;
-float yaw = 0.0f;
+float yaw = 45.0f;
 float pitch = 0.0f;
 
 
@@ -199,14 +193,14 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         shader.useProgram();
         shader.setMat4("view", camera.getViewMatrix());
-        shader.setMat4("projection", camera.getProjectionMatrix());
+        shader.setMat4("projection", camera.getProjectionMatrix((float) window.getWidth() / window.getHeight()));
         shader.setMat4("model", glm::mat4(1.0f));
         cubeMesh.draw(GL_FILL);
 
         
         outlineShader.useProgram();
         outlineShader.setMat4("view", camera.getViewMatrix());
-        outlineShader.setMat4("projection", camera.getProjectionMatrix());
+        outlineShader.setMat4("projection", camera.getProjectionMatrix((float) window.getWidth() / window.getHeight()));
         outlineShader.setMat4("model", glm::mat4(1.0f));
         glLineWidth(2.0f);
         cubeOutline.draw(GL_LINES);

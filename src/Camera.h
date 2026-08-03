@@ -9,7 +9,7 @@ public:
     void processMouseMovement(float xOffset, float yOffset, GLboolean constrainPitch = true);
     void processMouseScroll(float yOffset);
     glm::mat4 getViewMatrix();
-    glm::mat4 getProjectionMatrix();
+    glm::mat4 getProjectionMatrix(float aspectRatio);
 private:
     void updatePosition();
     //stadard vec3 kinda
@@ -23,7 +23,6 @@ private:
     float m_zoomSpeed;
     //projection matrix values
     float m_fov = 45.0f;
-    float m_aspectRatio = 1280.0f / 1080.0f;
     float m_nearPlane = 0.1f;
     float m_farPlane = 100.0f;
     //mat4 meaning 4x4 matrix
