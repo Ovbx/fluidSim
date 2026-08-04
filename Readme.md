@@ -14,6 +14,7 @@
 - GLAD (OpenGL function loading)
 - GLM (math)
 - MSYS2 g++ (no CMake yet)
+- Git
 
 ## Project structure
 
@@ -26,7 +27,7 @@ fluidSim/
 │   ├── Camera.h / Camera.cpp
 │   ├── Vertex.h
 │   ├── Fluid.h / Fluid.cpp        (planned)
-│   └── Renderer.h / Renderer.cpp  (planned)
+│   └── Renderer.h / Renderer.cpp 
 ├── output/                         (build output, gitignored)
 └── .vscode/                        (build tasks)
 ```
