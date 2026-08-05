@@ -34,3 +34,8 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 ## [August 2026] - [Git]
 - Learned about `git add/commit/push`. `git add .` tells `Git` what you updated. `git commit` saves a snapshot of your project to the hidden local `Git` repository. `git push` uploads that `local` repository into a `remote` repository.
 - `Local`-only vs. `remote`.
+
+## [August 2026] - [Jos Stam's, "Stable fluids"]
+- Note before learning: This portion of the code will be most difficult becuase I've had no prior experience with fluid dynamics. I will however be excited to learn.
+- In compact Navier-stokes equation to my understanding: v is the kinematic viscosity that the fluid has. Rho is the density. f is the external force, most likely going to be the gravity and perhaps my input paddle in the future. Nambla symbol is the del, which is the partial derivative. Del squared is the diffusion of momentum/viscocity, matched with v.
+- Need add force, diffuse, advect, project, advect -> add forces, diffuse velocity, project, advect velocity, project (to keep stable), inject density, diffuse density, advect density.
