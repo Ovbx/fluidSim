@@ -10,6 +10,7 @@
 #include "Vertex.h"
 #include "Mesh.h"
 #include "Renderer.h"
+#include "Input.h"
 
 //vertex stuff
 const char *vertexShaderSource = R"(
@@ -50,8 +51,11 @@ const char *outlineFragmentShaderSource = R"(
     }
 )";
 //variables
-float r = 0.0f;
-float storedR = r;
+const float red = 0.0f;
+const float green = 0.0f;
+const float blue = 0.0f;
+const float alpha = 1.0f;
+
 
 Vertex vertices[] = {
     // positions                 // colors
@@ -88,77 +92,35 @@ float distance = 10.0f;
 float yaw = 45.0f;
 float pitch = 0.0f;
 
+//cube
+    const int cubeVertices = 8;
+    const int cubeIndexCount = 36;
+    const int cubeEdgeIndexCount = 24;
 
-void processInput(GLFWwindow* window)
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, true);
-    }
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
-        std::cout << "clicked\n";
-    }
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-        r = storedR;
-    }
-}
-static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
-    //setup
-    static float lastX = 640.0f, lastY = 540.0f;
-    static bool firstMouse = true;
-
-    //no last position yet so make last x, y as first xpos,ypos
-    if (firstMouse) {
-        lastX = xPos;
-        lastY = yPos;
-        firstMouse = false;
-    }
-
-    //calc offsets
-    float xOffset = xPos - lastX;
-    float yOffset = yPos - lastY;
-
-    //store latest
-    lastX = xPos;
-    lastY = yPos;
-    //if not left click don't move camera
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)!= GLFW_PRESS) {
-        return;
-    }
-    //pass to camera
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
-        cam->processMouseMovement(xOffset, yOffset);
-    }
-}
-static void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
-        cam->processMouseScroll(yOffset);
-    }
-}
 
 int main()
 {
     //creates window: width, height, name, monitor, share
+    int width = 1280;
+    int height = 1080;
+    
     Window window(
-        1280,
-        1080,
+        width,
+        height,
         "OPENGL TEST"
     );
 
-    //cube
     Mesh cubeMesh(
         vertices,
-        8,
+        cubeVertices,
         indices,
-        36
+        cubeIndexCount
     );
     Mesh cubeOutline(
         vertices, 
-        8,
+        cubeVertices,
         edgeIndices,
-        24
+        cubeEdgeIndexCount
     );
 
     //shaders
@@ -190,7 +152,7 @@ int main()
 
     while(!window.shouldClose()) {
         processInput(handle);
-        glClearColor(r, 0.0f, 0.0f, 1.0f);
+        glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);

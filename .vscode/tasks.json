@@ -15,6 +15,7 @@
                 "src/Renderer.cpp",
                 "src/Shader.cpp",
                 "src/Mesh.cpp",
+                "src/Input.cpp",
                 "../Common/src/glad.c",
 
                 "-I../Common/include",

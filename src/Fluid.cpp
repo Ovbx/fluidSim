@@ -1,6 +1,6 @@
 #include "Fluid.h"
 EulerianGrid::EulerianGrid() {
-
+    
 }
 
 void EulerianGrid::addForces() {
@@ -27,5 +27,5 @@ void EulerianGrid::fluidSolver() {
 }
 
 void EulerianGrid::displaySolver() {
-
+    
 }
