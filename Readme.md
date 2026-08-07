@@ -27,6 +27,8 @@ fluidSim/
 │   ├── Camera.h / Camera.cpp
 │   ├── Vertex.h
 │   ├── Fluid.h / Fluid.cpp        (planned)
+│   ├── Input.h / Input.cpp
+│   ├── Mesh.h / Mesh.cpp
 │   └── Renderer.h / Renderer.cpp 
 ├── output/                         (build output, gitignored)
 └── .vscode/                        (build tasks)
