@@ -93,9 +93,9 @@ float yaw = 45.0f;
 float pitch = 0.0f;
 
 //cube
-    const int cubeVertices = 8;
-    const int cubeIndexCount = 36;
-    const int cubeEdgeIndexCount = 24;
+const int cubeVertices = 8;
+const int cubeIndexCount = 36;
+const int cubeEdgeIndexCount = 24;
 
 
 int main()
