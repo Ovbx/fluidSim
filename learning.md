@@ -57,11 +57,12 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - Heap memory `persists`.
 
 ## [August 2026] - [Staggered Grid aka Arakawa C-grid]
+- Why pick Arakawa C-grid over Collocated grids? Because it allows oscillating pressure fields to zero out, P_i+1 - P_i.
 - Divides a physical space into fixed grids of cells rather than tracking every individual particle like sph approach.
 - The physical variables are all 'staggered' across the box at different locations.
-- Tracers and scalars are placed at the cell's center (p)
+- Tracers and scalars are placed at the cell's center (p).
 - Zonal velocity (u, v) is placed east and west cell edge.
-- Meridional Velocity at north (v[j+1, i]) and south (v[j, i]) cell edges
-- N_x cross N_y tracer cells: Tracer array is (N_y, N_x)
-- u velocity array: (N_y, N_x +1) becuse of one extra edge on outer boundary
+- Meridional Velocity at north (v[j+1, i]) and south (v[j, i]) cell edges.
+- N_x cross N_y tracer cells: Tracer array is (N_y, N_x).
+- u velocity array: (N_y, N_x +1) becuse of one extra edge on outer boundary.
 - v velocity array: (N_y +1, N_x) likewise

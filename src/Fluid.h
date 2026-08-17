@@ -30,13 +30,13 @@ private:
 
     //helper for density
     inline double calculateDensity(int nx, int ny) const {
-        nx * ny;
+        return nx * ny;
     }
     inline double calculateXVelocity(int nx, int ny) const {
-        (nx + 1) * ny;
+        return (nx + 1) * ny;
     }
     inline double calculateYVelocity(int nx, int ny) const {
-        nx * (ny + 1);
+        return nx * (ny + 1);
     }
 
 
