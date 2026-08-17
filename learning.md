@@ -14,8 +14,10 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 
 ## [July 2026] — [Structs, header/cpp splitting]
 
-- First real use of a `struct`, I know, crazy huh. Used `Vertex` for `position and color`. Learned that structs are public by default and that they don't have a required behavior.
+- My first real use of a `struct`, I know, crazy huh. Used `Vertex` for `position and color`. Learned that structs are public by default and that they don't have a required behavior.
 - File-scope rule: declarations are legal at global scope, bare assignment statements are illegal.
+- Learned how to organize code using `.h` and `.cpp` files.
+- `#pragma once` is a `preprocesser directive`, meaning that C++ keeps an eye out for this specific file and marks it to only be included once during `compile time`.
 
 ## [July 2026] — [Mouse input, GLFW callbacks]
 - GLFW callbacks must be static, this is standard.
@@ -35,7 +37,31 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - Learned about `git add/commit/push`. `git add .` tells `Git` what you updated. `git commit` saves a snapshot of your project to the hidden local `Git` repository. `git push` uploads that `local` repository into a `remote` repository.
 - `Local`-only vs. `remote`.
 
-## [August 2026] - [Jos Stam's, "Stable fluids"]
+## [August 2026] - [Jos Stam's, "Stable fluids", "Real-time Fluid Dynamic for Games"]
 - Note before learning: This portion of the code will be most difficult becuase I've had no prior experience with fluid dynamics. I will however be excited to learn.
-- In compact Navier-stokes equation to my understanding: v is the kinematic viscosity that the fluid has. Rho is the density. f is the external force, most likely going to be the gravity and perhaps my input paddle in the future. Nambla symbol is the del, which is the partial derivative. Del squared is the diffusion of momentum/viscocity, matched with v.
-- Need add force, diffuse, advect, project, advect -> add forces, diffuse velocity, project, advect velocity, project (to keep stable), inject density, diffuse density, advect density.
+- In compact `Navier-stokes equation` to my understanding: `v` is the `kinematic viscosity` that the fluid has. `Rho` is the `density`. `f` is the `external force`, most likely going to be the gravity and perhaps my input paddle in the future. `Nambla symbol` is the `del`, which is built from partial derivatives. `Del squared` is the `diffusion` of momentum/viscocity, matched with `v`.
+- Need add external force, diffuse, project, advect, project -> add forces, diffuse velocity, project, advect velocity, project (to keep stable), inject density, diffuse density, advect density.
+- Nambla dot u = 0 is similar to all the other conservation of energy in other fields, but for fluid dynamics it's the conservation of volume for incompressible fluids.
+- Defining steps: 
+
+## [August 2026] - [Stack vs. heap]
+- `Stack and heap` is both memory related. Grid array will be heap-allocated.
+- Function call stack is a memory structure used by the program to keep track of ongoing function calls and to make sure that they go in the order that they're assigned, `LIFO`.
+- How the `Stack allocation` works: `temporary` memory is allocated for the function being called, in which the memory is in `contiguous blocks` which is the `call stack`. Size of memory is `known` before the execution, function called -> local variables allocated on stack. Function finishs execution -> memory `deallocated`.
+- Features of Stack allocation: memory is only available when the function is being called. Automatic dealloc. Stack memory full? `Segmentation fault`. Data can only be accessed by `owner thread`, making this `safer` than heap memory.
+- Faster than heap allocation because of the automatic memory management.
+- `Heap allocation` is the large pool of memory available for `dynamic alloc`. 
+- Create object -> stored in `heap memory`. References to the object is stored in `stack memory`.
+- Heap is accesible by `multiple` threads.
+- Heap does not have automatic dealloc.
+- Heap memory `persists`.
+
+## [August 2026] - [Staggered Grid aka Arakawa C-grid]
+- Divides a physical space into fixed grids of cells rather than tracking every individual particle like sph approach.
+- The physical variables are all 'staggered' across the box at different locations.
+- Tracers and scalars are placed at the cell's center (p)
+- Zonal velocity (u, v) is placed east and west cell edge.
+- Meridional Velocity at north (v[j+1, i]) and south (v[j, i]) cell edges
+- N_x cross N_y tracer cells: Tracer array is (N_y, N_x)
+- u velocity array: (N_y, N_x +1) becuse of one extra edge on outer boundary
+- v velocity array: (N_y +1, N_x) likewise

@@ -56,6 +56,7 @@ VS Code task (`Ctrl + Shift + B`) runs MSYS2 g++ . No CMake yet.
 
 This project is following established techniques from graphics research. Implementation is original, or I hope it is, and underlying methods are:
 - Stam, Jos. "`Stable Fluids.`" 1999.
+- Stam, Jos. "`Real-time Fluid Dynamic for Games`"
 - Harris, Mark "`Fast Fluid Dynamics Simulation on the GPU.`" *GPU Gems*, Chapter 38
 
 ## Learning Approach
