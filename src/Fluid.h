@@ -18,7 +18,6 @@ private:
     double m_dx, m_dy, m_dz, m_dt;
 
     std::vector<double> m_d; //density aka Nx * Ny
-    std::vector<double> m_u; //x-vel (Nx + 1) * Ny
     std::vector<double> m_v; //y-vel Nx * (Ny + 1)
 
     std::vector<double> m_dPrev;
@@ -28,17 +27,26 @@ private:
     //helper array for inside proect step
     std::vector<double> m_p;
 
-    //helper for density
-    inline double calculateDensity(int nx, int ny) const {
+    //helper
+    inline int densityCount(int nx, int ny) const {
         return nx * ny;
     }
-    inline double calculateXVelocity(int nx, int ny) const {
+    inline int uCount(int nx, int ny) const {
         return (nx + 1) * ny;
     }
-    inline double calculateYVelocity(int nx, int ny) const {
+    inline int vCount(int nx, int ny) const {
         return nx * (ny + 1);
     }
 
+    inline int indexDensity(int i, int j) const {
+        return (j * m_nx) + i;
+    }
+    inline int indexU(int i, int j) const  {
+        return j * (m_nx + 1) + i;
+    }
+    inline int indexV(int i, int j) const {
+        return (j * m_nx) + i;
+    }
 
 
 

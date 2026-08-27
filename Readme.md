@@ -2,10 +2,10 @@
 
 - Real-time 3D fluid simulation built in C++ and OpenGL, working towards a ray-marched volumetric render driven by a physical joystick/IMU input.
 
-**Status:** early development stage, just OpenGL fundamentals (camera, cube rendering) in progress. Not remotely close to a working fluid simulation yet.
+**Status:** early development stage, just OpenGL fundamentals (camera, cube rendering), fluid files are in progress. Not remotely close to a working fluid simulation yet.
 
 ## Goal 
-- Build a grid-based fluid solver following Jos Stam's `Stable Fluids` method, rendered via ray-marching through a 3D density texture, with real-time force input from a joystick (eventually ESP32 + MPU6050 IMU)
+- Build a staggered grid-based fluid solver following Jos Stam's `Stable Fluids` method, rendered via ray-marching through a 3D density texture, with real-time force input from a joystick (eventually ESP32 + MPU6050 IMU)
 
 ## Tech Stack
 - C++17
@@ -26,7 +26,7 @@ fluidSim/
 │   ├── Shader.h / Shader.cpp
 │   ├── Camera.h / Camera.cpp
 │   ├── Vertex.h
-│   ├── Fluid.h / Fluid.cpp        (planned)
+│   ├── Fluid.h / Fluid.cpp        (working on currently)
 │   ├── Input.h / Input.cpp
 │   ├── Mesh.h / Mesh.cpp
 │   └── Renderer.h / Renderer.cpp 
@@ -57,7 +57,7 @@ VS Code task (`Ctrl + Shift + B`) runs MSYS2 g++ . No CMake yet.
 This project is following established techniques from graphics research. Implementation is original, or I hope it is, and underlying methods are:
 - Stam, Jos. "`Stable Fluids.`" 1999.
 - Stam, Jos. "`Real-time Fluid Dynamic for Games`"
-- Harris, Mark "`Fast Fluid Dynamics Simulation on the GPU.`" *GPU Gems*, Chapter 38
+- Harhris, Mark "`Fast Fluid Dynamics Simulation on the GPU.`" *GPU Gems*, Chapter 38
 
 ## Learning Approach
 

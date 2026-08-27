@@ -40,9 +40,15 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 ## [August 2026] - [Jos Stam's, "Stable fluids", "Real-time Fluid Dynamic for Games"]
 - Note before learning: This portion of the code will be most difficult becuase I've had no prior experience with fluid dynamics. I will however be excited to learn.
 - In compact `Navier-stokes equation` to my understanding: `v` is the `kinematic viscosity` that the fluid has. `Rho` is the `density`. `f` is the `external force`, most likely going to be the gravity and perhaps my input paddle in the future. `Nambla symbol` is the `del`, which is built from partial derivatives. `Del squared` is the `diffusion` of momentum/viscocity, matched with `v`.
+- equation 2 is partial derivative of `u` w.s.t `t` = `-(u dot del)times u - 1/rho times del p + v times del^2 times u + f`
 - Need add external force, diffuse, project, advect, project -> add forces, diffuse velocity, project, advect velocity, project (to keep stable), inject density, diffuse density, advect density.
-- Nambla dot u = 0 is similar to all the other conservation of energy in other fields, but for fluid dynamics it's the conservation of volume for incompressible fluids.
-- Defining steps: 
+- `Nambla dot u = 0` is similar to all the other conservation of energy in other fields, but for fluid dynamics it's the conservation of volume for incompressible fluids.
+- Boundary conditions: fluid is defined on an n-dimension torus, fluids wraps around. The normal components of the velocity field is zero at boundary, meaning it doesn't move through the boundary.
+- There is a `velocity` and `pressure` field.
+- Jos Stam follows the `Helmholtz-Hodge Decomposition` mathematic result, "any vector field `w` can uniquely be decomposed into form: `w = u + delq` ... `u` has zero divergence ... `q` is a scalar field". Del of a vector field is gradient of that field for future me to remember. Vector field is sum of mass conserving field & gradient field. Operator `P` projects any vector field `w` onto div free part "`u = Pw`" Implicitly defined equation (`Poisson`) = `del dot w = del^2 times q`, `Neumann` boundary condition is partial derivative of `q w.s.t n = 0 on partial derivative D` (n is wall coordinate). The solution to the `Poisson` equation is then "used to compute the project `u`: `u = Pw = w - delq`.
+- The projection operator we found in the period bullet point is then used on both sides of Eq. 2 to "obtain a single equation for the velocity: `partial der u w.s.t t = P times (-(u dot del) times u + v times del^2 times u + f)`
+- note for the velocity equation above: `Pu = u`, `Pdelp = 0`
+- The `Poisson` equation here is used to incompressibility constraint & calculate pressure.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -57,12 +63,20 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - Heap memory `persists`.
 
 ## [August 2026] - [Staggered Grid aka Arakawa C-grid]
-- Why pick Arakawa C-grid over Collocated grids? Because it allows oscillating pressure fields to zero out, P_i+1 - P_i.
+- Why pick `Arakawa C-grid` over `Collocated` grids? Because it allows oscillating pressure fields to zero out, `P_i+1 - P_i`.
 - Divides a physical space into fixed grids of cells rather than tracking every individual particle like sph approach.
 - The physical variables are all 'staggered' across the box at different locations.
-- Tracers and scalars are placed at the cell's center (p).
-- Zonal velocity (u, v) is placed east and west cell edge.
-- Meridional Velocity at north (v[j+1, i]) and south (v[j, i]) cell edges.
-- N_x cross N_y tracer cells: Tracer array is (N_y, N_x).
-- u velocity array: (N_y, N_x +1) becuse of one extra edge on outer boundary.
-- v velocity array: (N_y +1, N_x) likewise
+- `Tracers` and `scalars` are placed at the cell's center (p).
+- `Zonal` velocity (u, v) is placed east and west cell edge.
+- `Meridional` Velocity at north `(v[j+1, i])` and south `(v[j, i])` cell edges.
+- `N_x` cross `N_y` tracer cells: Tracer array is `(N_y, N_x)`.
+- `u` velocity array: `(N_y, N_x +1)` becuse of one extra edge on outer boundary.
+- `v` velocity array: `(N_y +1, N_x)` likewise
+
+## [August 2026] - [Flattening 2D arrays]
+- `i, j` are grid coordinates, differ depending on what we're talking about in this program.
+- `width` depends on how much elements in one row of specific array.
+- General row-major flattening is taking a 2D array -> 1D array. `(i, j)` -> `single` int output
+- Find where `(i, j)` lives first, then attempt to reduce to `1d` by skipping `j` rows, `(j * row width)`, then move `i` over.
+- Recap: `index` = `(j * width) + i`,
+- Application for project: density flattening formula (cell center) = (j * nx) + i, xVelocity Flattening (cell face) = j * (nx + 1) + i, yVelocity Flattening (cell face) = (j * width) + i

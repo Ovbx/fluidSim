@@ -1,12 +1,12 @@
 #include "Fluid.h"
 #include <vector>
 
-StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dt(dt), m_dx(gridSpacing), m_dy(gridSpacing), m_d(calculateDensity(nx, ny), 0.0f), m_dPrev(calculateDensity(nx, ny), 0.0f), m_u(calculateXVelocity(nx, ny), 0.0f), m_uPrev(calculateXVelocity(nx, ny), 0.0f), m_v(calculateYVelocity(nx, ny), 0.0f), m_vPrev(calculateYVelocity(nx, ny), 0.0f)   {
+StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_d(densityCount(nx, ny), 0.0), m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
 }
 
 void StaggeredGrid::addForces() {
-    
+  
 }
 void StaggeredGrid::diffuseVelocity() {
 
