@@ -45,10 +45,10 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `Nambla dot u = 0` is similar to all the other conservation of energy in other fields, but for fluid dynamics it's the conservation of volume for incompressible fluids.
 - Boundary conditions: fluid is defined on an n-dimension torus, fluids wraps around. The normal components of the velocity field is zero at boundary, meaning it doesn't move through the boundary.
 - There is a `velocity` and `pressure` field.
-- Jos Stam follows the `Helmholtz-Hodge Decomposition` mathematic result, "any vector field `w` can uniquely be decomposed into form: `w = u + delq` ... `u` has zero divergence ... `q` is a scalar field". Del of a vector field is gradient of that field for future me to remember. Vector field is sum of mass conserving field & gradient field. Operator `P` projects any vector field `w` onto div free part "`u = Pw`" Implicitly defined equation (`Poisson`) = `del dot w = del^2 times q`, `Neumann` boundary condition is partial derivative of `q w.s.t n = 0 on partial derivative D` (n is wall coordinate). The solution to the `Poisson` equation is then "used to compute the project `u`: `u = Pw = w - delq`.
-- The projection operator we found in the period bullet point is then used on both sides of Eq. 2 to "obtain a single equation for the velocity: `partial der u w.s.t t = P times (-(u dot del) times u + v times del^2 times u + f)`
+- Jos Stam follows the `Helmholtz-Hodge Decomposition` mathematic result, "any vector field `w` can uniquely be decomposed into form: `w = u + delq` ... `u` has zero divergence ... `q` is a scalar field". Del of a vector field is gradient of that field for future me to remember. Vector field is sum of mass conserving field & gradient field. Operator `P` projects any vector field `w` onto div free part "`u = Pw`" Implicitly defined equation (`Poisson`) = `del dot w = del^2 times q`, `Neumann` boundary condition is partial derivative of `q w.r.t n = 0 on partial derivative D` (n is wall coordinate). The solution to the `Poisson` equation is then "used to compute the project `u`: `u = Pw = w - delq`.
+- The projection operator we found in the bullet point above is then used on both sides of Eq. 2 to "obtain a single equation for the velocity: `partial der u w.r.t t = P times (-(u dot del) times u + v times del^2 times u + f)`
 - note for the velocity equation above: `Pu = u`, `Pdelp = 0`
-- The `Poisson` equation here is used to incompressibility constraint & calculate pressure.
+- The `Poisson` equation here is used to enforce incompressibility constraint & calculate pressure.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -72,7 +72,10 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `N_x` cross `N_y` tracer cells: Tracer array is `(N_y, N_x)`.
 - `u` velocity array: `(N_y, N_x +1)` becuse of one extra edge on outer boundary.
 - `v` velocity array: `(N_y +1, N_x)` likewise
-
+- `ghost-cells` will be used for `pressure` and `tangential` velocity, `normal` velocity component won't use ghost-cells because staggering them already puts them in place. 4x4 pressure grid -> 6x6.
+- `ghost-cell` pressure is populated by copying the value from the nearest interior cell. Enforces the zero pressure gradient condition we talked about in the jos stam section.
+- `ghost-cell` tangential velocity copys the value of veloicty from the nearest interior cell, but negative. SO, v_ghost = -v_interior to force the velocity to zero at the wall.
+- For face-centered arrays (u, v) you need `ghost-cells` for stenciling. For future me refering back to these notes: stenciling is when a computation takes a point (i) and reads the surrounding points (i +-1 ) to compute the point (i) new value. If we don't have ghost-cell's this stenciling mechanic in computation will yield a garbage value at the border of the grids.
 ## [August 2026] - [Flattening 2D arrays]
 - `i, j` are grid coordinates, differ depending on what we're talking about in this program.
 - `width` depends on how much elements in one row of specific array.
