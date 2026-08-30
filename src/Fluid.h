@@ -4,7 +4,7 @@
 class StaggeredGrid {
 public:
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
-    void addForces();
+    void addForces(int i, int j, double fx, double fy);
     void diffuseVelocity();
     void project();
     void advectVelocity();
@@ -31,7 +31,7 @@ private:
 
 
     //helper
-    //density and pressure although the same math is seperated for future me to know
+    //density and pressure although the same math is seperated for future me to know, +2 is to account for the ghost cells, returns count of array elements
     inline int densityCount(int nx, int ny) const {
         return (nx + 2) * (ny + 2);
     }

@@ -5,8 +5,10 @@ StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_
     //hello world
 }
 
-void StaggeredGrid::addForces() {
-  
+void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
+    //m_u[] is a std::vector:operator[], it does pointer arithmatic to gets the address, dereferences it, and give the value stored as a reference. 
+    m_u[indexU(i, j)] += m_dt * fx;
+    m_v[indexV(i, j)] += m_dt * fy;
 }
 void StaggeredGrid::diffuseVelocity() {
 
