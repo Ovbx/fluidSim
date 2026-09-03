@@ -13,17 +13,18 @@ void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
 void StaggeredGrid::diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v,std::vector<double>& vPrev, double diff ) {
     int i, j, k;
     int sweepCounter = 20;
-    double a = m_dt * diff / (m_dx * m_dy);
+    //discretized rate of diffusion per grid cell
+    double rateOfDiffusion = m_dt * diff / (m_dx * m_dy);
     //similar to jos stam's implementation in "Real-Time Fluid Dynamics for Games"
     for (k = 0; k < sweepCounter; k++) {
         for (i = 1; i <= m_nx - 1; i++) {
             for (j = 1; j <= m_ny; j++) {
-                u[indexU(i, j)] = (uPrev[indexU(i, j)] + a * (u[indexU(i - 1, j)] + u[indexU(i + 1, j)] + u[indexU(i, j - 1)] + u[indexU(i, j + 1)])) / (1 + (4*a));
+                u[indexU(i, j)] = (uPrev[indexU(i, j)] + rateOfDiffusion * (u[indexU(i - 1, j)] + u[indexU(i + 1, j)] + u[indexU(i, j - 1)] + u[indexU(i, j + 1)])) / (1 + (4* rateOfDiffusion));
             }
         }
         for (i = 1; i <= m_nx; i++) {
             for (j = 1; j <= m_ny - 1; j++) {
-                v[indexV(i, j)] = (vPrev[indexV(i, j)] + a*(v[indexV(i - 1, j)] + v[indexV(i + 1, j)] + v[indexV(i, j - 1)] + v[indexV(i, j + 1)])) / (1 + (4 * a));
+                v[indexV(i, j)] = (vPrev[indexV(i, j)] +  rateOfDiffusion*(v[indexV(i - 1, j)] + v[indexV(i + 1, j)] + v[indexV(i, j - 1)] + v[indexV(i, j + 1)])) / (1 + (4 * rateOfDiffusion));
             }
         }
     }
@@ -43,8 +44,8 @@ void StaggeredGrid::advectDensity() {
 }
 
 void StaggeredGrid::fluidSolver() {
-    //add velocity
-    //diffuse velocity
+    //addVelocity();
+    //diffuseVelocity();
     //project velocity
     //advect velocity
     //project velocity
