@@ -5,7 +5,7 @@ class StaggeredGrid {
 public:
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
     void addForces(int i, int j, double fx, double fy);
-    void diffuseVelocity();
+    void diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v, std::vector<double>& vPrev, double diff);
     void project();
     void advectVelocity();
     void injectDensity();
@@ -39,10 +39,10 @@ private:
         return (nx + 2) * (ny + 2);
     }
     inline int uCount(int nx, int ny) const {
-        return (nx + 1) * ny;
+        return (nx + 1) * (ny + 2);
     }
     inline int vCount(int nx, int ny) const {
-        return nx * (ny + 1);
+        return (nx + 2) * (ny + 1);
     }
     //likewise, for future me to know 
     inline int indexDensity(int i, int j) const {

@@ -10,7 +10,7 @@ void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
     m_u[indexU(i, j)] += m_dt * fx;
     m_v[indexV(i, j)] += m_dt * fy;
 }
-void StaggeredGrid::diffuseVelocity() {
+void StaggeredGrid::diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v,std::vector<double>& vPrev, double diff ) {
 
 }
 void StaggeredGrid::project() {

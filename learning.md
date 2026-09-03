@@ -8,7 +8,7 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 
 - Implemented Spherical to Cartesian coordinates conversation for an orbit-based camera
 - Realization: `y` depends only on `pitch ` (rotation around x-axis). `x`/`z` depend on both `yaw` and `cos(pitch)` (shrinking factor). Less horizontal reach as you tilt towards the vertical.
-- Kind of stupid, but Radians vs. degrees: sin/cos defined in terms of radians, degrees gives wrong answer for this program.
+- Kinda naive, but Radians vs. degrees: sin/cos defined in terms of radians, degrees gives wrong answer for this program.
 - Bug: computed `x/y/z` in `updatePosition()` but never assigned the result to `m_viewMatrix` which meant that it compiled just fine, but rendered nothing at all.
 - Bug: `m_up` was never initialized, ruining the math for the matrixes (not sure what exactly yet, haven't learned linear algebra)
 
@@ -50,11 +50,14 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - note for the velocity equation above: `Pu = u`, `Pdelp = 0`
 - The `Poisson` equation here is used to enforce incompressibility constraint & calculate pressure.
 - To add forces, we use the equation that jos stam states in his paper: `w_1(x) = w_0(x) + deltat f(x,t)`, `w_0 (x)` represents the initial velocity at point x, `f(x,t)` is the force at point x, time t, this could be gravity, user input,or whatever external influence that is injected into the system. w_1 is the velocity at point x after those steps.
-- Method of Characteristics: mathematical technique used to solve partial differential equations.
-- Coutrant-Friedrichs-Lewy condition: mathematics rule limiting time step's size in explicit computer simulations of flow equations to prevent instability. Jos stam's implementation bypasses the CFL limitation through semi-lagrangian advection, looks backwards in time thorugh bilinear interpolation and copies it into the current cell.
-- The standard equation as stated by jos stam is `delta w_2 w.r.t t = v times del^2 w_2`. Typically, you have to discretize laplacian, for future me, discretize means chopping continuous math that works on an infinite number of points along a smooth line into a finite grid of seperate points. Then, you have to follow the whole explicit time step. However, as stated by jos stam, this method is "unstable when the viscosity is large". Explicit method gives direct formula (find new value once then finished)
-- To avoid this explicit method, we will use the implicit method: `(I - v times delta t times the laplacian) w_3(x) = w_2(x). I is the identity operator, again for future me, an identity operator in this case is just the unmodified field next to the diffusion terms. In short text for me to refer back to: discretize, big system of equations now have equations that only involve nearby cells, needed to let Gauss-Seidel solve cheaply w/o full matrix inverison. Implicit method gives equation you have to solve (iterations, multiple passes, and gauss-seidel).
-- Gauss-Seidel iteration: numerical mehtod that uses the latest available values from neighbors. Gauss-seidel is faster than Jacobi because it uses newest value instead of waiting for a whole sweep.
+- `Method of Characteristics`: mathematical technique used to solve partial differential equations.
+- `Coutrant-Friedrichs-Lewy` condition: mathematics rule limiting time step's size in explicit computer simulations of flow equations to prevent instability. Jos stam's implementation bypasses the `CFL` limitation through semi-lagrangian advection, looks backwards in time thorugh bilinear interpolation and copies it into the current cell.
+- The standard diffusion equation as stated by jos stam is `w_2 w.r.t t = v times del^2 w_2`. Typically, you have to `discretize` laplacian, for future me, discretize means chopping continuous math that works on an infinite number of points along a smooth line into a finite grid of seperate points. Then, you have to follow the whole `explicit` time step. However, as stated by jos stam, this method is "unstable when the viscosity is large". Explicit method gives direct formula (find new value once then finished)
+- Discretization of the Laplacian at a single cell makes the Laplacian into a `weighted` combination of cell's value and the cell's adjacent neighbors' values. `x - v*dt*[(x[i-1, j] + x[i+1, j] + x[i, j-1] + x[i, j+1]) - 4x] = x_0`
+- To avoid this explicit method, we will use the `implicit` method: `(I - v times delta t times the laplacian) w_3(x) = w_2(x).` `I` is the identity operator, again for future me, an identity operator in this case is just the `unmodified field` (multiply by 1, `I * w_3 = w_3`) next to the diffusion terms. w_2 on the right side of the equation is the fixed source term (field before diffusion). In short text for me to refer back to: discretize, big system of equations now have equations that only involve nearby cells, needed to let `Gauss-Seidel` solve cheaply w/o full matrix inverison. Implicit method gives equation you have to solve (iterations, multiple passes, and gauss-seidel).
+- Gauss-Seidel iteration: `numerical` method that uses the latest available values from neighbors. Gauss-seidel is faster than `Jacobi` because it uses newest value instead of waiting for a whole sweep.
+- The discretized equation is then 
+- Boundary conditions: reapplied after every single `Gauss-seidel` sweep to prevent numerical errors.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -85,10 +88,10 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 ## [August 2026] - [Flattening 2D arrays]
 - `i, j` are grid coordinates, differ depending on what we're talking about in this program.
 - `width` depends on how much elements in one row of specific array.
-- General row-major flattening is taking a 2D array -> 1D array. `(i, j)` -> `single` int output
+- General row-major flattening is taking a `2D array -> 1D array`. `(i, j)` -> `single` int output
 - Find where `(i, j)` lives first, then attempt to reduce to `1d` by skipping `j` rows, `(j * row width)`, then move `i` over.
 - Recap: `index` = `(j * width) + i`,
 - Application for project: density flattening formula (cell center) = (j * nx) + i, xVelocity Flattening (cell face) = j * (nx + 1) + i, yVelocity Flattening (cell face) = (j * width) + i
 ## [August 2026] - [Performance]
-- Indexing is used to simulate a 2D grid while storing all the elements in a single continuous block of memory. Ex: using std::vector<double> m_u with an indexing function like indexU(i, j). Why? Using alternative method like std::vector<std::vector<double>> is not only fragmented but is slower because of double pointer indirection and slower cache locality. Ex: My first C++ project about simulating collisions between bouncing objects used std::vector<std::vector<double>>, fragmented memory chunks worked fine when there were less operations done on the vector, but performance dropped off drastically as operations scaled.
-- Memory allocation complexity of flat vector compared to a nested vector is O(1) compared to O(N), N allocations made per N rows. Pointer indirection count was 1 for flat compared to 2 for nested, with 1 being staight to the data, while to had to jump to the row pointer, then jump to element.
+- `Indexing` is used to `simulate` a `2D grid` while storing all the elements in a `single` continuous block of memory. Ex: using std::vector<double> m_u with an indexing function like indexU(i, j). Why? Using alternative method like std::vector<std::vector<double>> is not only `fragmented` but is slower because of `double pointer indirection` and slower `cache locality`. Ex: My first C++ project about simulating collisions between bouncing objects used std::vector<std::vector<double>>, `fragmented` memory chunks worked fine when there were less operations done on the vector, but performance dropped off drastically as operations scaled.
+- `Memory allocation complexity` of flat vector compared to a nested vector is `O(1)` compared to `O(N)`, N allocations made per N rows. `Pointer indirection count` was `1` for `flat` compared to `2` for `nested`, with 1 being staight to the data, while to had to jump to the row pointer, then jump to element.
