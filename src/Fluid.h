@@ -3,6 +3,9 @@
 
 class StaggeredGrid {
 public:
+    void setBndU(float* x);
+    void setBndV(float* y);
+    void setBndDensity(float* d);
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
     void addForces(int i, int j, double fx, double fy);
     void diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v, std::vector<double>& vPrev, double diff);
@@ -12,6 +15,7 @@ public:
     void advectDensity();
     void fluidSolver();
     void displaySolver();
+    void setBnd();
 
 private:
     int m_nx, m_ny;

@@ -1,9 +1,38 @@
 #include "Fluid.h"
 #include <vector>
 
+
 StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_d(densityCount(nx, ny), 0.0), m_p(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_pPrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
 }
+
+void StaggeredGrid::setBndU (float* x) {
+    //ghost rows (tangential no slip mirror negate)
+    for (int i = 0; i <=m_nx; i++) {
+        x[indexU(i, 0)] = -x[indexU(i, 1)];
+        x[indexU(i, m_ny + 1)] = -x[indexU(i, m_ny)];
+    
+    }
+    //wall faces (normal, zero)
+    for(int j = 1; j <= m_ny; j++) {
+        x[indexU(0, j)] = 0;
+        x[indexU(m_nx, j)] = 0;
+    }
+}
+
+void StaggeredGrid::setBndV (float* y) {
+    for (int k = 0; k <= m_ny; k++) {
+        //ghost face
+        y[indexV(0, k)] = -y[indexV(1, k)];
+        y[indexV(m_nx + 1, k)] = -y[indexV(m_nx, k)];
+    }
+        //wall face
+    for (int j = 1; j <= m_nx; j++) {
+        y[indexV(j, 0)] = 0;
+        y[indexV(j, m_ny)] = 0;
+    }
+}
+
 
 void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
     //m_u[] is a std::vector:operator[], it does pointer arithmatic to gets the address, dereferences it, and give the value stored as a reference. 

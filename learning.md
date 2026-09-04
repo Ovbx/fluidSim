@@ -56,8 +56,9 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - Discretization of the Laplacian at a single cell makes the Laplacian into a `weighted` combination of cell's value and the cell's adjacent neighbors' values. `x - v*dt*[(x[i-1, j] + x[i+1, j] + x[i, j-1] + x[i, j+1]) - 4x] = x_0`
 - To avoid this explicit method, we will use the `implicit` method: `(I - v times delta t times the laplacian) w_3(x) = w_2(x).` `I` is the identity operator, again for future me, an identity operator in this case is just the `unmodified field` (multiply by 1, `I * w_3 = w_3`) next to the diffusion terms. w_2 on the right side of the equation is the fixed source term (field before diffusion). In short text for me to refer back to: discretize, big system of equations now have equations that only involve nearby cells, needed to let `Gauss-Seidel` solve cheaply w/o full matrix inverison. Implicit method gives equation you have to solve (iterations, multiple passes, and gauss-seidel).
 - Gauss-Seidel iteration: `numerical` method that uses the latest available values from neighbors. Gauss-seidel is faster than `Jacobi` because it uses newest value instead of waiting for a whole sweep.
-- The discretized equation is then 
+- The discretized equation is then (I - v * dt * del^2) x = x0 → u[indexU(i, j)] = (uPrev[indexU(i, j)] + rateOfDiffusion * (u[indexU(i - 1, j)] + u[indexU(i + 1, j)] + u[indexU(i, j - 1)] + u[indexU(i, j + 1)])) / (1 + (4 * rateOfDiffusion)) while v follows the same equation but just replaces u.
 - Boundary conditions: reapplied after every single `Gauss-seidel` sweep to prevent numerical errors.
+- What are the boundary conditions? Solid walls: no flow exit walls, horizontal component of velocity 0 on vertical walls, vertical component of velocity is 0 on horizontal walls. Density and other fields assume continuity.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -90,7 +91,7 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `width` depends on how much elements in one row of specific array.
 - General row-major flattening is taking a `2D array -> 1D array`. `(i, j)` -> `single` int output
 - Find where `(i, j)` lives first, then attempt to reduce to `1d` by skipping `j` rows, `(j * row width)`, then move `i` over.
-- Recap: `index` = `(j * width) + i`,
+- Recap: `index` = `(j * width) + i`, offset = row * row_width + column, j = which row, width = how long, we have + 1 for width because we have nx/ny on wall faces.
 - Application for project: density flattening formula (cell center) = (j * nx) + i, xVelocity Flattening (cell face) = j * (nx + 1) + i, yVelocity Flattening (cell face) = (j * width) + i
 ## [August 2026] - [Performance]
 - `Indexing` is used to `simulate` a `2D grid` while storing all the elements in a `single` continuous block of memory. Ex: using std::vector<double> m_u with an indexing function like indexU(i, j). Why? Using alternative method like std::vector<std::vector<double>> is not only `fragmented` but is slower because of `double pointer indirection` and slower `cache locality`. Ex: My first C++ project about simulating collisions between bouncing objects used std::vector<std::vector<double>>, `fragmented` memory chunks worked fine when there were less operations done on the vector, but performance dropped off drastically as operations scaled.
