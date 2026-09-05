@@ -66,12 +66,6 @@ float distance = 10.0f;
 float yaw = 45.0f;
 float pitch = 0.0f;
 
-//cube
-const int cubeVertices = 8;
-const int cubeIndexCount = 36;
-const int cubeEdgeIndexCount = 24;
-
-
 int main()
 {
     //creates window: width, height, name, monitor, share
@@ -86,15 +80,21 @@ int main()
 
     Mesh cubeMesh(
         Square::vertices,
-        Square::cubeVertices,
+        Square::vertexCount,
         Square::indices,
         Square::cubeIndexCount
     );
     Mesh cubeOutline(
         Square::vertices, 
-        Square::cubeVertices,
+        Square::vertexCount,
         Square::edgeIndices,
         Square::cubeEdgeIndexCount
+    );
+    Mesh arrow(
+        twoDimensionalArrow::vertices,
+        twoDimensionalArrow::vertexCount,
+        twoDimensionalArrow::indices,
+        twoDimensionalArrow::indexCount
     );
 
     //shaders
@@ -130,6 +130,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
+        drawArrow(&window, &camera, &shader, &arrow, glm::mat4(1.0f));
 
         window.swapBuffers();
         window.pollEvents();

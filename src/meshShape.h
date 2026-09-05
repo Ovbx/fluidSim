@@ -31,12 +31,33 @@ const GLuint edgeIndices[] = {
     // vertical edges connecting bottom to top
     0,4, 1,5, 2,6, 3,7
 };
-const int cubeVertices = 8;
-const int cubeIndexCount = 36;
-const int cubeEdgeIndexCount = 24;
+const size_t vertexCount = sizeof(vertices) / sizeof(vertices[0]);
+const size_t cubeIndexCount = sizeof(indices) / sizeof(indices[0]);
+const size_t cubeEdgeIndexCount = sizeof(edgeIndices) / sizeof(edgeIndices[0]);
 
 
 }
 namespace twoDimensionalArrow {
+    const Vertex vertices[] = {
+        //rectangle shaft
+        {{0.0f, -0.2f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //bottom left
+        {{1.2f, -0.2f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //bottom right
+        {{1.2, 0.2f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //top right
+        {{0.0f, 0.2f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //top left
+
+        //triangle head
+        {{1.2f, -0.6f, 0.0f}, {1.0f, 0.0f, 0.0f}}, // bottom point
+        {{1.2f, 0.6f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //top point
+        {{2.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //pointy of the triangle
+
+    };
+    const GLuint indices[] {
+        0, 1, 2, 
+        3, 0, 2,
+        4, 6, 5
+        
+    };
+    const size_t vertexCount = sizeof(vertices) / sizeof(vertices[0]);
+    const size_t indexCount = sizeof(indices) / sizeof(indices[0]);
 
 }
