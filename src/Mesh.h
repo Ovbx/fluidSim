@@ -6,7 +6,7 @@
 
 class Mesh {
 public:
-    Mesh(Vertex* vertices, size_t vertexCount, GLuint* indices, size_t indexCount);
+    Mesh(const Vertex* vertices, const size_t vertexCount, const GLuint* indices, const size_t indexCount);
     ~Mesh();
     void draw(GLenum mode);
 private:

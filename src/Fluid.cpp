@@ -68,7 +68,6 @@ void StaggeredGrid::diffuseVelocity(double diff) {
         }
         setBndV();
     }
-    //set bnd not here yet
 }
 void StaggeredGrid::project() {
 

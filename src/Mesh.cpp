@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "Vertex.h"
 
-Mesh::Mesh(Vertex* vertices, size_t vertexCount, GLuint* indices, size_t indexCount) : m_indexCount(indexCount) {
+Mesh::Mesh(const Vertex* vertices, const size_t vertexCount, const GLuint* indices, const size_t indexCount) : m_indexCount(indexCount) {
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
     glGenBuffers(1, &m_EBO);
