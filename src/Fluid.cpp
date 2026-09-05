@@ -6,32 +6,37 @@ StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_
     //hello world
 }
 
-void StaggeredGrid::setBndU (float* x) {
+void StaggeredGrid::setBndU () {
     //ghost rows (tangential no slip mirror negate)
     for (int i = 0; i <=m_nx; i++) {
-        x[indexU(i, 0)] = -x[indexU(i, 1)];
-        x[indexU(i, m_ny + 1)] = -x[indexU(i, m_ny)];
+        m_u[indexU(i, 0)] = -m_u[indexU(i, 1)];
+        m_u[indexU(i, m_ny + 1)] = -m_u[indexU(i, m_ny)];
     
     }
     //wall faces (normal, zero)
     for(int j = 1; j <= m_ny; j++) {
-        x[indexU(0, j)] = 0;
-        x[indexU(m_nx, j)] = 0;
+        m_u[indexU(0, j)] = 0;
+        m_u[indexU(m_nx, j)] = 0;
     }
 }
 
-void StaggeredGrid::setBndV (float* y) {
+void StaggeredGrid::setBndV () {
     for (int k = 0; k <= m_ny; k++) {
         //ghost face
-        y[indexV(0, k)] = -y[indexV(1, k)];
-        y[indexV(m_nx + 1, k)] = -y[indexV(m_nx, k)];
+        m_v[indexV(0, k)] = -m_v[indexV(1, k)];
+        m_v[indexV(m_nx + 1, k)] = -m_v[indexV(m_nx, k)];
     }
         //wall face
     for (int j = 1; j <= m_nx; j++) {
-        y[indexV(j, 0)] = 0;
-        y[indexV(j, m_ny)] = 0;
+        m_v[indexV(j, 0)] = 0;
+        m_v[indexV(j, m_ny)] = 0;
     }
 }
+
+void StaggeredGrid::copyPreviousVelocities() {
+    m_uPrev = m_u;
+    m_vPrev = m_v;
+    }
 
 
 void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
@@ -39,7 +44,8 @@ void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
     m_u[indexU(i, j)] += m_dt * fx;
     m_v[indexV(i, j)] += m_dt * fy;
 }
-void StaggeredGrid::diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v,std::vector<double>& vPrev, double diff ) {
+
+void StaggeredGrid::diffuseVelocity(double diff) {
     int i, j, k;
     int sweepCounter = 20;
     //discretized rate of diffusion per grid cell
@@ -48,14 +54,19 @@ void StaggeredGrid::diffuseVelocity(std::vector<double>& u, std::vector<double>&
     for (k = 0; k < sweepCounter; k++) {
         for (i = 1; i <= m_nx - 1; i++) {
             for (j = 1; j <= m_ny; j++) {
-                u[indexU(i, j)] = (uPrev[indexU(i, j)] + rateOfDiffusion * (u[indexU(i - 1, j)] + u[indexU(i + 1, j)] + u[indexU(i, j - 1)] + u[indexU(i, j + 1)])) / (1 + (4* rateOfDiffusion));
+                //gauss-seidel relaxation
+                m_u[indexU(i, j)] = (m_uPrev[indexU(i, j)] + rateOfDiffusion * ( m_u[indexU(i - 1, j)] + m_u[indexU(i + 1, j)] + m_u[indexU(i, j - 1)] + m_u[indexU(i, j + 1)])) / (1 + (4* rateOfDiffusion));
+                
             }
         }
+        setBndU();
         for (i = 1; i <= m_nx; i++) {
             for (j = 1; j <= m_ny - 1; j++) {
-                v[indexV(i, j)] = (vPrev[indexV(i, j)] +  rateOfDiffusion*(v[indexV(i - 1, j)] + v[indexV(i + 1, j)] + v[indexV(i, j - 1)] + v[indexV(i, j + 1)])) / (1 + (4 * rateOfDiffusion));
+                m_v[indexV(i, j)] = (m_vPrev[indexV(i, j)] +  rateOfDiffusion*(m_v[indexV(i - 1, j)] + m_v[indexV(i + 1, j)] + m_v[indexV(i, j - 1)] + m_v[indexV(i, j + 1)])) / (1 + (4 * rateOfDiffusion));
+                
             }
         }
+        setBndV();
     }
     //set bnd not here yet
 }
@@ -73,8 +84,9 @@ void StaggeredGrid::advectDensity() {
 }
 
 void StaggeredGrid::fluidSolver() {
-    //addVelocity();
-    //diffuseVelocity();
+    addForces(20, 20, 50, 50);
+    copyPreviousVelocities();
+    diffuseVelocity(20);
     //project velocity
     //advect velocity
     //project velocity

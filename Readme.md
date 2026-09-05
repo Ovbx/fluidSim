@@ -46,7 +46,7 @@ VS Code task (`Ctrl + Shift + B`) runs MSYS2 g++ . No CMake yet.
 - [x] Quad rendering
 - [x] Cube rendering (EBO, depth test, GLM transforms)
 - [ ] Fluid solver: advection
-- [ ] Fluid solver: diffusion
+- [x] Fluid solver: diffusion
 - [ ] Fluid solver: pressure projection
 - [ ] 3D density texture + ray marching
 - [ ] Joystick input → force injection

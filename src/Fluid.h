@@ -3,12 +3,13 @@
 
 class StaggeredGrid {
 public:
-    void setBndU(float* x);
-    void setBndV(float* y);
+    void setBndU();
+    void setBndV();
     void setBndDensity(float* d);
+    void copyPreviousVelocities();
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
     void addForces(int i, int j, double fx, double fy);
-    void diffuseVelocity(std::vector<double>& u, std::vector<double>& uPrev, std::vector<double>& v, std::vector<double>& vPrev, double diff);
+    void diffuseVelocity(double diff);
     void project();
     void advectVelocity();
     void injectDensity();
