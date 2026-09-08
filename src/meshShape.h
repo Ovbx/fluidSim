@@ -52,10 +52,10 @@ namespace twoDimensionalArrow {
 
     };
     const GLuint indices[] {
-        0, 1, 2, 
+        0, 1, 2,
         3, 0, 2,
         4, 6, 5
-        
+
     };
     const size_t vertexCount = sizeof(vertices) / sizeof(vertices[0]);
     const size_t indexCount = sizeof(indices) / sizeof(indices[0]);

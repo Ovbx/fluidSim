@@ -32,7 +32,7 @@ private:
     std::vector<double> m_pPrev;
     std::vector<double> m_uPrev;
     std::vector<double> m_vPrev;
-    
+
 
 
     //helper
@@ -49,7 +49,7 @@ private:
     inline int vCount(int nx, int ny) const {
         return (nx + 2) * (ny + 1);
     }
-    //likewise, for future me to know 
+    //likewise, for future me to know
     inline int indexDensity(int i, int j) const {
         return (j + 1) * (m_nx + 2) + (i + 1);
     }

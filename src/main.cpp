@@ -71,7 +71,7 @@ int main()
     //creates window: width, height, name, monitor, share
     int width = 1280;
     int height = 1080;
-    
+
     Window window(
         width,
         height,
@@ -85,7 +85,7 @@ int main()
         Square::cubeIndexCount
     );
     Mesh cubeOutline(
-        Square::vertices, 
+        Square::vertices,
         Square::vertexCount,
         Square::edgeIndices,
         Square::cubeEdgeIndexCount
@@ -116,7 +116,7 @@ int main()
         target,
         distance,
         yaw,
-        pitch  
+        pitch
     );
     GLFWwindow* handle = window.getHandle();
 
@@ -130,7 +130,9 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
-        drawArrow(&window, &camera, &shader, &arrow, glm::mat4(1.0f));
+        float hardcodedAngle = 45;
+        glm::mat4 arrowModel = glm::rotate(glm::mat4(1.0f), glm::radians(hardcodedAngle), glm::vec3(0, 0, 1));
+        drawArrow(&window, &camera, &shader, &arrow, arrowModel);
 
         window.swapBuffers();
         window.pollEvents();
