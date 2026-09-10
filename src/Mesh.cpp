@@ -51,7 +51,7 @@ void Mesh::configureInstancing(const float* instanceData, const size_t instanceC
 
   glVertexAttribPointer(
     2,
-    3,
+    m_numberOfValuesPerInstance,
     GL_FLOAT,
     GL_FALSE,
     sizeof(float) * m_numberOfValuesPerInstance,
@@ -65,8 +65,10 @@ void Mesh::updateInstanceData(const float* data, const size_t count) {
   glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
   glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(float) * m_numberOfValuesPerInstance, data);
 }
-void Mesh::drawInstances(GLenum mode, const size_t count) {
+void Mesh::drawInstances(GLenum mode, GLsizei instanceCount) {
   glBindVertexArray(m_VAO);
+  glDrawElementsInstanced(mode, m_indexCount, GL_UNSIGNED_INT, 0, instanceCount);
+
 }
 void Mesh::draw(GLenum mode) {
     glBindVertexArray(m_VAO);

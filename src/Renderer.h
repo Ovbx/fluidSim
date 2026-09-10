@@ -7,4 +7,5 @@
 
 void drawCubeWithOutline(Window* window, Camera* camera, Shader* shader, Shader* outlineShader, Mesh* cubeMesh, Mesh* cubeOutline);
 void drawArrow(Window* window, Camera* camera, Shader* shader, Mesh* arrowMesh, const glm::mat4& modelMatrix);
+void drawArrowInstances(Window* window, Camera* camera, Shader* shader, Mesh* arrowMesh, GLuint instanceCount);
 void initRenderState();

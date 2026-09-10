@@ -35,23 +35,24 @@ void main()
 )";
 const char* instancedVertexShaderSource = R"(
   #version 330 core
-  layout (location = 0) in vec3 apos;
-  layout (location = 1) in vec3 acolor;
-  layout (location = 2) in vec3 instancedata;
+  layout (location = 0) in vec3 aPos;
+  layout (location = 1) in vec3 aColor;
+  layout (location = 2) in vec4 instanceData;
 
-  out vec3 ourcolor;
+  out vec3 ourColor;
 
   uniform mat4 view;
   uniform mat4 projection;
 
   void main () {
-    ourcolor = acolor;
-    float angle = instancedata.z;
+    ourColor = aColor;
+    float angle = instanceData.z;
+    float scale = instanceData.w;
     float cosOfInstanceData = cos(angle);
     float sinOfInstanceData = sin(angle);
     mat2 rotation = mat2(cosOfInstanceData, sinOfInstanceData, -sinOfInstanceData, cosOfInstanceData);
-    vec2 rotatedposition = (rotation * apos.xy) + instancedata.xy;
-    gl_Position = projection * view * vec4(rotatedposition, apos.z, 1.0);
+    vec2 rotatedPosition = (rotation * aPos.xy) * scale + instanceData.xy;
+    gl_Position = projection * view * vec4(rotatedPosition, aPos.z, 1.0);
   }
 
 )";
@@ -141,6 +142,10 @@ int main()
         outlineFragmentShaderSource
     );
     Shader arrowShader(
+      vertexShaderSource,
+      arrowFillFragmentShaderSource
+    );
+    Shader arrowInstancedShader(
       instancedVertexShaderSource,
       arrowFillFragmentShaderSource
     );
@@ -162,17 +167,24 @@ int main()
     glfwSetCursorPosCallback(handle, mouseCallback);
     glfwSetScrollCallback(handle, scrollCallback);
 
+    //test
+    float testInstanceData[] =  {
+      -2.0f, 0.0f, 0.0f, 0.1f,
+      0.0f, 2.0f, glm::radians(90.0f), 0.5f,
+      2.0f, 0.0f, glm::radians(180.0f), 0.2f,
+    };
+    GLuint testInstanceCount = 3;
+    arrow.configureInstancing(testInstanceData, testInstanceCount);
+
+
+
     while(!window.shouldClose()) {
         processInput(handle);
         glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
-        float hardcodedAngle = 45;
-        glm::mat4 arrowModel = glm::rotate(glm::mat4(1.0f), glm::radians(hardcodedAngle), glm::vec3(0, 0, 1));
-        float scaleFactor = 0.1;
-        arrowModel = glm::scale(arrowModel, glm::vec3(scaleFactor));
-        drawArrow(&window, &camera, &arrowShader, &arrow, arrowModel);
+        drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, testInstanceCount);
 
         window.swapBuffers();
         window.pollEvents();

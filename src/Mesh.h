@@ -10,7 +10,7 @@ public:
     ~Mesh();
     void configureInstancing(const float* data, const size_t count);
     void updateInstanceData(const float* data, const size_t count);
-    void drawInstances(GLenum mode, const size_t count);
+    void drawInstances(GLenum mode, GLsizei count);
     void draw(GLenum mode);
 private:
     GLuint m_VBO;
@@ -18,5 +18,5 @@ private:
     GLuint m_EBO;
     GLsizei m_indexCount;
     GLuint m_instanceVBO;
-    int m_numberOfValuesPerInstance = 3;
+    int m_numberOfValuesPerInstance = 4;
 };

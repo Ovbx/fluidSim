@@ -14,7 +14,7 @@ void drawCubeWithOutline(Window* window, Camera* camera, Shader* shader, Shader*
     // shader->setMat4("model", glm::mat4(1.0f));
     // cubeMesh->draw(GL_TRIANGLES);
 
-    
+
     outlineShader->useProgram();
     outlineShader->setMat4("view", camera->getViewMatrix());
     outlineShader->setMat4("projection", camera->getProjectionMatrix((float) window->getWidth() / window->getHeight()));
@@ -30,6 +30,14 @@ void drawArrow(Window* window, Camera* camera, Shader* shader, Mesh* arrowMesh, 
     shader->setMat4("model", modelMatrix);
     arrowMesh->draw(GL_TRIANGLES);
 
+}
+void drawArrowInstances(Window* window, Camera* camera, Shader* shader, Mesh* arrowMesh, const GLuint instanceCount) {
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  shader->useProgram();
+  shader->setMat4("view", camera->getViewMatrix());
+  shader->setMat4("projection",
+camera->getProjectionMatrix((float) window->getWidth() / window->getHeight()));
+arrowMesh->drawInstances(GL_TRIANGLES, instanceCount);
 }
 void initRenderState() {
     glEnable(GL_BLEND);
