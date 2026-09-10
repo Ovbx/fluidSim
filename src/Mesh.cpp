@@ -20,7 +20,7 @@ Mesh::Mesh(const Vertex* vertices, const size_t vertexCount, const GLuint* indic
         3,
         GL_FLOAT,
         GL_FALSE,
-        sizeof(Vertex), 
+        sizeof(Vertex),
         (void*)0
     );
 
@@ -40,6 +40,33 @@ Mesh::~Mesh() {
     glDeleteVertexArrays(1, &m_VAO);
     glDeleteBuffers(1, &m_VBO);
     glDeleteBuffers(1, &m_EBO);
+}
+void Mesh::configureInstancing(const float* instanceData, const size_t instanceCount) {
+  glBindVertexArray(m_VAO);
+
+  glGenBuffers(1, &m_instanceVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
+
+  glBufferData(GL_ARRAY_BUFFER, instanceCount * sizeof(float) * m_numberOfValuesPerInstance, instanceData, GL_DYNAMIC_DRAW);
+
+  glVertexAttribPointer(
+    2,
+    3,
+    GL_FLOAT,
+    GL_FALSE,
+    sizeof(float) * m_numberOfValuesPerInstance,
+    (void*) 0
+  );
+  glEnableVertexAttribArray(2);
+  glVertexAttribDivisor(2, 1);
+}
+void Mesh::updateInstanceData(const float* data, const size_t count) {
+
+  glBindBuffer(GL_ARRAY_BUFFER, m_instanceVBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, count * sizeof(float) * m_numberOfValuesPerInstance, data);
+}
+void Mesh::drawInstances(GLenum mode, const size_t count) {
+  glBindVertexArray(m_VAO);
 }
 void Mesh::draw(GLenum mode) {
     glBindVertexArray(m_VAO);

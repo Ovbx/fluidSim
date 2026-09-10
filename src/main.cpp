@@ -19,6 +19,7 @@ const char *vertexShaderSource = R"(
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 
+
 out vec3 ourColor;
 
 uniform mat4 model;
@@ -29,8 +30,32 @@ void main()
 {
     gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
     ourColor = aColor;
+
 }
 )";
+const char* instancedVertexShaderSource = R"(
+  #version 330 core
+  layout (location = 0) in vec3 apos;
+  layout (location = 1) in vec3 acolor;
+  layout (location = 2) in vec3 instancedata;
+
+  out vec3 ourcolor;
+
+  uniform mat4 view;
+  uniform mat4 projection;
+
+  void main () {
+    ourcolor = acolor;
+    float angle = instancedata.z;
+    float cosOfInstanceData = cos(angle);
+    float sinOfInstanceData = sin(angle);
+    mat2 rotation = mat2(cosOfInstanceData, sinOfInstanceData, -sinOfInstanceData, cosOfInstanceData);
+    vec2 rotatedposition = (rotation * apos.xy) + instancedata.xy;
+    gl_Position = projection * view * vec4(rotatedposition, apos.z, 1.0);
+  }
+
+)";
+
 const char *fillFragmentShaderSource = R"(
     #version 330 core
     out vec4 FragColor;
@@ -50,6 +75,15 @@ const char *outlineFragmentShaderSource = R"(
     {
         FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
+)";
+const char* arrowFillFragmentShaderSource = R"(
+  #version 330 core
+  out vec4 FragColor;
+  in vec3 ourColor;
+
+  void main() {
+    FragColor = vec4(ourColor, 1.0f);
+  }
 )";
 //variables
 const float red = 0.0f;
@@ -106,6 +140,10 @@ int main()
         vertexShaderSource,
         outlineFragmentShaderSource
     );
+    Shader arrowShader(
+      instancedVertexShaderSource,
+      arrowFillFragmentShaderSource
+    );
     shader.useProgram();
 
     //rendering
@@ -132,7 +170,9 @@ int main()
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
         float hardcodedAngle = 45;
         glm::mat4 arrowModel = glm::rotate(glm::mat4(1.0f), glm::radians(hardcodedAngle), glm::vec3(0, 0, 1));
-        drawArrow(&window, &camera, &shader, &arrow, arrowModel);
+        float scaleFactor = 0.1;
+        arrowModel = glm::scale(arrowModel, glm::vec3(scaleFactor));
+        drawArrow(&window, &camera, &arrowShader, &arrow, arrowModel);
 
         window.swapBuffers();
         window.pollEvents();
