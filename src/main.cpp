@@ -12,6 +12,7 @@
 #include "Renderer.h"
 #include "Input.h"
 #include "meshShape.h"
+#include "Fluid.h"
 
 //vertex stuff
 const char *vertexShaderSource = R"(
@@ -167,6 +168,17 @@ int main()
     glfwSetCursorPosCallback(handle, mouseCallback);
     glfwSetScrollCallback(handle, scrollCallback);
 
+    //StaggeredGrid
+    int nx = 4;
+    int ny = 4;
+    double dt = 0.016;
+    double dx = 1.0;
+    StaggeredGrid grid(
+      nx,
+      ny,
+      dt,
+      dx
+    );
     //test
     float testInstanceData[] =  {
       -2.0f, 0.0f, 0.0f, 0.1f,
@@ -182,7 +194,7 @@ int main()
         processInput(handle);
         glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        grid.fluidSolver();
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
         drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, testInstanceCount);
 
