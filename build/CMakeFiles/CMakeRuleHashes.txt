@@ -1,0 +1,5 @@
+# Hashes of file build rules.
+8c18c47b8002a571184c8211006ea79a _deps/glad-build/CMakeFiles/glad-generate-files
+64eeaf762d771061bae3fa9132d9a7db _deps/glad-build/include/glad/glad.h
+276c4b15f8c4c00986f5029eef530c0e _deps/glfw-build/CMakeFiles/uninstall
+e1f6bd1c3fcad98ac949be8572b63d40 _deps/glfw-build/src/CMakeFiles/update_mappings

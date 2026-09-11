@@ -118,3 +118,15 @@ The whole flow:
 - 3. compute the angle and magnitude per cell, `angle = atan2(vCenter, uCenter)`, `magnitude = sqrt(u*u + v*v)`.
 - 4. Build the `per-instance array` that is used to construct our many arrow instances. Loop through cells: `[0, nx ]` and `[0, ny]` (because bounds i< m_nx - 1 exclude last cell, so i < m_nx, indexed 0 to nx - 1, same for ny), push `(x, y, angle, scaleFromMagnitude)` (things we found from our previous mock functions) into a std::vector<float> or nx * ny * 4. `scaleFromMagnitude` is built from clamping the magnitude, minScale, and maxScale.
 - 5. Call the newly constructed `displaySolver after fluidSolver` and `before we draw`.
+## [September 2026] - [CMake]
+- Instead of having a `Makefile` that `compiles` our `source code` into `binary` using a `compiler` like `GCC`, we can use `CMake`.
+- `CMake` is a `configuration program`. It doesn't run the commands which make the software build, but generates a build system based on the project, envr, and other thing that the user-provides.
+- 1. specify the cmake minimum version required, I'm using 3.20 here. `cmake_minimum_required(VERSION 3.20)`
+- 2. tell Cmake the project name. `project(FluidSim)`
+- 3. Set up global settings via standard properties like the C++ standard we are using, set CMake to require it, and tlel CMake to create a compile commands json listing compiler calls used to build the project. `set(CMAKE_CXX_STANDARD_REQUIRED ON)` `set(CMAKE_CXX_STANDARD_REQUIRED ON)` `set(CMAKE_EXPORT_COMPILE_COMMANDS ON)`
+- 4. Set up `FetchContent`, which is a CMake module. This lets you automatically download, configure, and add in `dependencies` that we need `(glad, glfw, glm)`, all at configure time.
+- 5. find_package OpenGL and require it
+- 6. Add main application targets. `add_executable(FluidSim src/main.cpp etc)`
+- 7. include directories to tell compiler where to find the header files at to build the FluidSim target `target_include_directories(FluidSim PRIVATE include)`, `PRIVATE` is the scope of the directory, `include` will be the path to the folder when we move the header files from our src over to include.
+- 8. Link the libraries that we are using using`target_link_libraries(FluidSim PRIVATE OpenGL::GL glad ${CMAKE_DL_LIBS} $<$<TARGET_EXISTS:glfw>:glfw> $<$<NOT:$<TARGET_EXISTS:glfw>>:glfw3   $<$<TARGET_EXISTS:glm::glm>:glm::glm> $<$<NOT:$<EXISTS:glm::glm>>:glm>)` `OpenGL:GL` links OpenGL, it locates the system's OpenGL headers and drivers. `glad` links the GLAD lib. `${CMAKE_DL_LIBS}` is CMake variable that changes according to what lib required on host plateform to load dynamic libs at runtime. The whole `$<$<` statment is a `fallback logic`. It evaluates if a `CMake target` named `glfw or glm` exists and links `glfw` or `glm::glm`. OR, if it doesn't exist, look for `glfw3` or the bare target name `glm` instead of the `namespace` one.
+9. If using` Windows`, set Microsoft's compiler to W4, Warning 4. Else, if compiling with `GCC` or some other compiler, use `-Wall, -Wextra, -pedantic, etc`. `target_compile_options(FluidSim PRIVATE "flags here")`

@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/cmake_install.cmake",
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/_deps/glfw-build/cmake_install.cmake",
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/_deps/glfw-build/src/cmake_install.cmake",
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/_deps/glm-build/cmake_install.cmake",
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/_deps/glm-build/glm/cmake_install.cmake",
+		"C:/Users/kurom/Documents/openGLcpp/fluidSim/build/_deps/glad-build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -12,7 +12,7 @@ void processInput(GLFWwindow* window)
     }
     if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        std::cout << "clicked\n";
+
     }
     // if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
     // }
