@@ -1,9 +1,10 @@
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Camera.h"
 
 class Window {
-public: 
+public:
     Window(int width, int height, const char* title);
     ~Window();
     int getWidth() const {
@@ -22,4 +23,8 @@ private:
     int m_width;
     int m_height;
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+};
+struct WindowContext {
+  Window* window;
+  Camera* camera;
 };

@@ -118,4 +118,3 @@ The whole flow:
 - 3. compute the angle and magnitude per cell, `angle = atan2(vCenter, uCenter)`, `magnitude = sqrt(u*u + v*v)`.
 - 4. Build the `per-instance array` that is used to construct our many arrow instances. Loop through cells: `[0, nx ]` and `[0, ny]` (because bounds i< m_nx - 1 exclude last cell, so i < m_nx, indexed 0 to nx - 1, same for ny), push `(x, y, angle, scaleFromMagnitude)` (things we found from our previous mock functions) into a std::vector<float> or nx * ny * 4. `scaleFromMagnitude` is built from clamping the magnitude, minScale, and maxScale.
 - 5. Call the newly constructed `displaySolver after fluidSolver` and `before we draw`.
-- Notes: displaySolver will be

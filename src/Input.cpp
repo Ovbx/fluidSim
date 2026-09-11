@@ -1,5 +1,6 @@
 #include "Input.h"
 #include "Camera.h"
+#include "Window.h"
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -40,14 +41,14 @@ void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
         return;
     }
     //pass to camera
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
-        cam->processMouseMovement(xOffset, yOffset);
+    WindowContext* context = static_cast<WindowContext*>(glfwGetWindowUserPointer(window));
+    if (context && context->camera) {
+        context->camera->processMouseMovement(xOffset, yOffset);
     }
 }
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
-        cam->processMouseScroll(yOffset);
+    WindowContext* context = static_cast<WindowContext*>(glfwGetWindowUserPointer(window));
+    if (context && context->camera) {
+        context->camera->processMouseScroll(yOffset);
     }
 }

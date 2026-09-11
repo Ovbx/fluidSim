@@ -163,8 +163,12 @@ int main()
         pitch
     );
     GLFWwindow* handle = window.getHandle();
+    WindowContext context {
+      &window,
+      &camera
+    };
 
-    glfwSetWindowUserPointer(handle, &camera);
+    glfwSetWindowUserPointer(handle, &context);
     glfwSetCursorPosCallback(handle, mouseCallback);
     glfwSetScrollCallback(handle, scrollCallback);
 
@@ -181,10 +185,9 @@ int main()
     );
     float worldSize = 1.0f;
     float minScale = 0.02f;
-    float maxScale = 0.1f;
+    float maxScale = 0.06f;
     std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
     arrow.configureInstancing(initialData.data(), initialData.size() / 4);
-
 
     while(!window.shouldClose()) {
         processInput(handle);
