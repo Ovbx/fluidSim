@@ -1,24 +1,48 @@
-# Build output
+# Build and output directories
+build/
 output/*.exe
 output/*.dll
 output/*.o
 output/*.obj
 
-# VS Code
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+compile_commands.json
+.cache/
+
+# Shared libraries and compiler objects
+*.exe
+*.out
+*.app
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+
+# VS Code environment and configurations
 .vscode/*
 !.vscode/tasks.json
 !.vscode/c_cpp_properties.json
 !.vscode/launch.json
 
-# OS clutter
+# IDE and operating system files
 .DS_Store
 Thumbs.db
+.idea/
+*.user
 
-# Common/ dependencies (GLFW/GLAD/GLM) - typically NOT committed if large/downloaded separately
-# Uncomment if you don't want to track these in git:
+# Project dependencies
 # ../Common/
 
-# PlatformIO (ESP32 side, if added to this repo later)
+# PlatformIO micro-controller configuration
 .pio/
 .pioenvs/
 .piolibdeps/
