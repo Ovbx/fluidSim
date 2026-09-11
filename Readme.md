@@ -2,9 +2,9 @@
 
 - Real-time 3D fluid simulation built in C++ and OpenGL, working towards a ray-marched volumetric render driven by a physical joystick/IMU input.
 
-**Status:** early development stage, just OpenGL fundamentals (camera, cube rendering), fluid files are in progress. Not remotely close to a working fluid simulation yet.
+**Status:** Fluid simulation vector arrows working. Fluid simluation only up to diffusion as of now 9/11/26.
 
-## Goal 
+## Goal
 - Build a staggered grid-based fluid solver following Jos Stam's `Stable Fluids` method, rendered via ray-marching through a 3D density texture, with real-time force input from a joystick (eventually ESP32 + MPU6050 IMU)
 
 ## Tech Stack
@@ -13,31 +13,41 @@
 - GLFW (windowing/input)
 - GLAD (OpenGL function loading)
 - GLM (math)
-- MSYS2 g++ (no CMake yet)
+- MSYS2 g++
 - Git
+- Cmake
 
 ## Project structure
 
 ```
 fluidSim/
+├── build/ (CMake, gitignored)
+├── include/
+│   ├── Window.h
+│   ├── Shader.h
+│   ├── Camera.h
+│   ├── Vertex.h
+│   ├── Input.h
+│   ├── Mesh.h
+│   ├── Renderer.h
+│   ├── meshShape.h
+│   ├── Fluid.h
 ├── src/
 │   ├── main.cpp
-│   ├── Window.h / Window.cpp
-│   ├── Shader.h / Shader.cpp
-│   ├── Camera.h / Camera.cpp
-│   ├── Vertex.h
-│   ├── Fluid.h / Fluid.cpp        (working on currently)
-│   ├── Input.h / Input.cpp
-│   ├── Mesh.h / Mesh.cpp
-│   └── Renderer.h / Renderer.cpp 
+│   ├── Window.cpp
+│   ├── Shader.cpp
+│   ├── Camera.cpp
+│   ├── Fluid.cpp        (working on currently)
+│   ├── Input.cpp
+│   ├── Mesh.cpp
+│   └── Renderer.cpp
 ├── output/                         (build output, gitignored)
-└── .vscode/                        (build tasks)
+└── .vscode/                        (build tasks, gitignored)
+└── CMakeLists.txt
 ```
 
-Sibling folder `../Common/` holds GLFW/GLAD/GLM headers and libs.
-
 ## Building
-VS Code task (`Ctrl + Shift + B`) runs MSYS2 g++ . No CMake yet.
+CMake
 
 ## Progress / roadmap
 - [x] Window creation, RAII wrapped
@@ -53,7 +63,7 @@ VS Code task (`Ctrl + Shift + B`) runs MSYS2 g++ . No CMake yet.
 - [ ] ESP32 + MPU6050 IMU input (hardware track, separate)
 
 ## References
-
+- `https://learnopengl.com/`
 This project is following established techniques from graphics research. Implementation is original, or I hope it is, and underlying methods are:
 - Stam, Jos. "`Stable Fluids.`" 1999.
 - Stam, Jos. "`Real-time Fluid Dynamic for Games`"
