@@ -1,0 +1,4 @@
+CMakeLists,txt
+*.cmake
+external/*
+third_party/*
