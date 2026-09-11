@@ -1,5 +1,7 @@
 #include "Fluid.h"
 #include <vector>
+#include <cmath>
+#include <algorithm>
 
 StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_d(densityCount(nx, ny), 0.0), m_p(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_pPrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
@@ -11,7 +13,7 @@ void StaggeredGrid::setBndU () {
         m_u.at(indexU(i, m_ny)) = -m_u.at(indexU(i, m_ny - 1));
     }
     //wall faces (normal, zero)
-    for(int j = 1; j <= m_ny; j++) {
+    for(int j = 0; j <= m_ny - 1; j++) {
         m_u.at(indexU(0, j)) = 0.0;
         m_u.at(indexU(m_nx, j)) = 0.0;
     }
@@ -24,9 +26,9 @@ void StaggeredGrid::setBndV () {
         m_v.at(indexV(m_nx, k)) = -m_v.at(indexV(m_nx - 1, k));
     }
         //wall face
-    for (int j = 1; j <= m_nx - 1; j++) {
-        m_v.at(indexV(j, 0)) = 0;
-        m_v.at(indexV(j, m_ny)) = 0;
+    for (int i = 0; i <= m_nx - 1; i++) {
+        m_v.at(indexV(i, 0)) = 0.0;
+        m_v.at(indexV(i, m_ny)) = 0.0;
     }
 }
 
@@ -93,6 +95,50 @@ void StaggeredGrid::fluidSolver() {
     //advect density
 }
 
-void StaggeredGrid::displaySolver() {
-  
+std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {
+  return buildInstanceData(worldSize, minScale, maxScale);
+}
+glm::vec2 StaggeredGrid::cellToWorldPosition(int i, int j, float worldSize) const {
+  float distanceFromCenterToEdge = 0.5f;
+  float worldX = (((i + distanceFromCenterToEdge) / m_nx ) - distanceFromCenterToEdge) * worldSize;
+  float worldY = (((j + distanceFromCenterToEdge) / m_ny) - distanceFromCenterToEdge) * worldSize;
+  glm::vec2 worldPosition = glm::vec2(worldX, worldY);
+  return worldPosition;
+}
+double StaggeredGrid::sampleU(int i, int j) const {
+  double uCenter = (m_u.at(indexU(i, j)) + m_u.at(indexU(i + 1, j))) / 2.0;
+  return uCenter;
+}
+double StaggeredGrid::sampleV(int i, int j) const {
+  double vCenter = (m_v.at(indexV(i, j)) + m_v.at(indexV(i, j +1))) / 2.0;
+  return vCenter;
+}
+float StaggeredGrid::computeAngle(double u, double v) const {
+  float angle = std::atan2(v, u);
+  return angle;
+}
+float StaggeredGrid::computeMagnitude(double u, double v) const {
+  float magnitude = std::sqrt(u*u + v*v);
+  return magnitude;
+}
+std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale) const {
+  std::vector<float> instanceData;
+  glm::vec2 worldPosition;
+  float angle, magnitude, scale;
+  double u, v;
+  for (int i = 0; i < m_nx; i++) {
+    for (int j = 0; j < m_ny; j++) {
+      u = sampleU(i, j);
+      v = sampleV(i, j);
+      angle = computeAngle(u, v);
+      magnitude = computeMagnitude(u, v);
+      scale = std::clamp(static_cast<float>(magnitude), minScale, maxScale);
+      worldPosition = cellToWorldPosition(i, j, worldSize);
+      instanceData.push_back(worldPosition.x);
+      instanceData.push_back(worldPosition.y);
+      instanceData.push_back(angle);
+      instanceData.push_back(scale);
+    }
+  }
+  return instanceData;
 }

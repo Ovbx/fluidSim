@@ -179,15 +179,11 @@ int main()
       dt,
       dx
     );
-    //test
-    float testInstanceData[] =  {
-      -2.0f, 0.0f, 0.0f, 0.1f,
-      0.0f, 2.0f, glm::radians(90.0f), 0.5f,
-      2.0f, 0.0f, glm::radians(180.0f), 0.2f,
-    };
-    GLuint testInstanceCount = 3;
-    arrow.configureInstancing(testInstanceData, testInstanceCount);
-
+    float worldSize = 1.0f;
+    float minScale = 0.02f;
+    float maxScale = 0.1f;
+    std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
+    arrow.configureInstancing(initialData.data(), initialData.size() / 4);
 
 
     while(!window.shouldClose()) {
@@ -195,8 +191,10 @@ int main()
         glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         grid.fluidSolver();
+        std::vector<float> frameData = grid.displaySolver(worldSize, minScale, maxScale);
+        arrow.updateInstanceData(frameData.data(), frameData.size() / 4);
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
-        drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, testInstanceCount);
+        drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, nx * ny);
 
         window.swapBuffers();
         window.pollEvents();

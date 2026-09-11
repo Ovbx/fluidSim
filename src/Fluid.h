@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <glm/glm.hpp>
 
 class StaggeredGrid {
 public:
@@ -15,8 +16,7 @@ public:
     void injectDensity();
     void advectDensity();
     void fluidSolver();
-    void displaySolver();
-    void setBnd();
+    std::vector<float> displaySolver(float worldSize, float minScale, float maxScale);
 
 private:
     int m_nx, m_ny;
@@ -33,7 +33,12 @@ private:
     std::vector<double> m_uPrev;
     std::vector<double> m_vPrev;
 
-
+    glm::vec2 cellToWorldPosition(int i, int j, float worldSize) const;
+    double sampleU(int i, int j) const;
+    double sampleV(int i, int j) const;
+    float computeAngle(double u, double v) const;
+    float computeMagnitude(double u, double v) const;
+    std::vector<float> buildInstanceData(float worldSize, float minScale, float maxScale) const;
 
     //helper
     //density and pressure although the same math is seperated for future me to know, +2 is to account for the ghost cells, returns count of array elements
