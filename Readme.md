@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/512893e5-dec4-48c0-94aa-a2b8adbbbae2
+
 # FluidSim
 
 - Real-time 3D fluid simulation built in C++ and OpenGL, working towards a ray-marched volumetric render driven by a physical joystick/IMU input.
