@@ -2,8 +2,9 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
-StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_d(densityCount(nx, ny), 0.0), m_p(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_pPrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
+StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_density(densityCount(nx, ny), 0.0), m_pressure(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_pPrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
 }
 void StaggeredGrid::setBndU () {
@@ -31,6 +32,17 @@ void StaggeredGrid::setBndV () {
         m_v.at(indexV(i, m_ny)) = 0.0;
     }
 }
+void StaggeredGrid::setBndPressure() {
+  for (int i = 0; i <= m_ny; i++) {
+    //ghost
+    m_pressure.at(indexCenter(-1, i)) = m_pressure.at(indexCenter(0, i));
+    m_pressure.at(indexCenter(m_nx, i)) = m_pressure.at(indexCenter(m_nx - 1, i));
+  }
+  for (int j = 0; j <= m_nx; j++) {
+    m_pressure.at(indexCenter(j, -1)) = m_pressure.at(indexCenter(j, 0));
+    m_pressure.at(indexCenter(j, m_ny))= m_pressure.at(indexCenter(j, m_ny - 1));
+  }
+}
 
 void StaggeredGrid::copyPreviousVelocities() {
     m_uPrev = m_u;
@@ -46,12 +58,11 @@ void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
 
 void StaggeredGrid::diffuseVelocity(double diff) {
     int i, j, k;
-    int sweepCounter = 20;
     //discretized rate of diffusion per grid cell
     double rateOfDiffusion = m_dt * diff / (m_dx * m_dy);
     double denominator = 1.0 + 4.0 * rateOfDiffusion;
     //similar to jos stam's implementation in "Real-Time Fluid Dynamics for Games"
-    for (k = 0; k < sweepCounter; k++) {
+    for (k = 0; k < m_sweepCount; k++) {
         for (i = 1; i <= m_nx - 1; i++) {
             for (j = 0; j <= m_ny - 1; j++) {
                 //gauss-seidel relaxation
@@ -70,7 +81,35 @@ void StaggeredGrid::diffuseVelocity(double diff) {
     }
 }
 void StaggeredGrid::project() {
+  int i, j, k;
+  double h = 1.0 / m_nx;
+  std::vector<double> div(pressureCount(m_nx, m_ny), 0.0);
+  for (i = 0; i <= m_nx - 1; i++) {
+    for (j = 0; j <= m_ny - 1; j++) {
+      div.at(indexCenter(i, j)) = -0.5* h * (m_u.at(indexU(i+1, j)) - m_u.at(indexU(i, j)) + m_v.at(indexV(i, j+1)) - m_v.at(indexV(i, j)));
 
+      m_pressure.at(indexCenter(i, j)) = 0.0;
+    }
+  }
+
+  setBndPressure();
+  for(k = 0; k <= m_sweepCount; k++) {
+    for (i = 0; i <=m_nx - 1; i++) {
+      for (j = 0; j <= m_ny - 1; j++) {
+        m_pressure.at(indexCenter(i, j)) = (div.at(indexCenter(i, j)) + m_pressure.at(indexCenter(i-1, j)) + m_pressure.at(indexCenter(i+1, j)) + m_pressure.at(indexCenter(i, j - 1)) + m_pressure.at(indexCenter(i, j+1))) /4.0;
+      }
+    }
+    setBndPressure();
+  }
+
+  for (i = 0; i <= m_nx - 1; i++) {
+    for (j = 0; j<= m_ny - 1; j++) {
+      m_u.at(indexU(i, j)) -= 0.5 * (m_pressure.at(indexCenter(i + 1, j)) - m_pressure.at(indexCenter(i-1, j))) / h;
+      m_v.at(indexV(i, j)) -= 0.5 * (m_pressure.at(indexCenter(i, j+1))  - m_pressure.at(indexCenter(i, j-1))) /h;
+    }
+  }
+setBndU();
+setBndV();
 }
 void StaggeredGrid::advectVelocity() {
 
@@ -78,21 +117,29 @@ void StaggeredGrid::advectVelocity() {
 void StaggeredGrid::injectDensity() {
 
 }
+void StaggeredGrid::diffuseDensity() {
+
+}
 void StaggeredGrid::advectDensity() {
 
 }
 
 void StaggeredGrid::fluidSolver() {
-    addForces(2, 2, 50, 50);
-    copyPreviousVelocities();
-    diffuseVelocity(0.0001);
-    //project velocity
-    //advect velocity
-    //project velocity
+  static bool forceApplied = false;
+  if (!forceApplied) {
+    addForces(2, 2, 25, 50);
+    forceApplied = true;
+  }
+  copyPreviousVelocities();
+  diffuseVelocity(0.0001);
+  project();
 
-    //inject density
-    //diffuse density
-    //advect density
+  //advect velocity
+  //project velocity
+
+  //inject density
+  //diffuse density
+  //advect density
 }
 
 std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {

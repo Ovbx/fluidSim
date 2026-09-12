@@ -2,7 +2,7 @@
 
 - Real-time 3D fluid simulation built in C++ and OpenGL, working towards a ray-marched volumetric render driven by a physical joystick/IMU input.
 
-**Status:** Fluid simulation vector arrows working. Fluid simluation only up to diffusion as of now 9/11/26.
+**Status:** Fluid simulation vector arrows working. Fluid simulation only up to diffusion as of now 9/11/26.
 
 ## Goal
 - Build a staggered grid-based fluid solver following Jos Stam's `Stable Fluids` method, rendered via ray-marching through a 3D density texture, with real-time force input from a joystick (eventually ESP32 + MPU6050 IMU)

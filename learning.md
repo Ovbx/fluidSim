@@ -59,6 +59,7 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - The discretized equation is then (I - v * dt * del^2) x = x0 → u[indexU(i, j)] = (uPrev[indexU(i, j)] + rateOfDiffusion * (u[indexU(i - 1, j)] + u[indexU(i + 1, j)] + u[indexU(i, j - 1)] + u[indexU(i, j + 1)])) / (1 + (4 * rateOfDiffusion)) while v follows the same equation but just replaces u.
 - Boundary conditions: reapplied after every single `Gauss-seidel` sweep to prevent numerical errors.
 - What are the boundary conditions? Solid walls: no flow exit walls, horizontal component of velocity 0 on vertical walls, vertical component of velocity is 0 on horizontal walls. Density and other fields assume continuity.
+- The project step forces velocity to be `mass conserving`. This step of the fluid solver is where the `Poisson` equation is solved and also applied. Steps: `find div` from current u, v -> `find pressure` from gauss-seidel using div and neighboring pressures -> `correct` the `u, and v` using our new `pressure gradient`.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -80,7 +81,7 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `Zonal` velocity (u, v) is placed east and west cell edge.
 - `Meridional` Velocity at north `(v[j+1, i])` and south `(v[j, i])` cell edges.
 - `N_x` cross `N_y` tracer cells: Tracer array is `(N_y, N_x)`.
-- `u` velocity array: `(N_y, N_x +1)` becuse of one extra edge on outer boundary.
+- `u` velocity array: `(N_y, N_x +1)` because of one extra edge on outer boundary.
 - `v` velocity array: `(N_y +1, N_x)` likewise
 - `ghost-cells` will be used for `pressure` and `tangential` velocity, `normal` velocity component won't use ghost-cells because staggering them already puts them in place. 4x4 pressure grid -> 6x6.
 - `ghost-cell` pressure is populated by copying the value from the nearest interior cell. Enforces the zero pressure gradient condition we talked about in the jos stam section.
@@ -129,4 +130,4 @@ The whole flow:
 - 6. Add main application targets. `add_executable(FluidSim src/main.cpp etc)`
 - 7. include directories to tell compiler where to find the header files at to build the FluidSim target `target_include_directories(FluidSim PRIVATE include)`, `PRIVATE` is the scope of the directory, `include` will be the path to the folder when we move the header files from our src over to include.
 - 8. Link the libraries that we are using using`target_link_libraries(FluidSim PRIVATE OpenGL::GL glad ${CMAKE_DL_LIBS} $<$<TARGET_EXISTS:glfw>:glfw> $<$<NOT:$<TARGET_EXISTS:glfw>>:glfw3   $<$<TARGET_EXISTS:glm::glm>:glm::glm> $<$<NOT:$<EXISTS:glm::glm>>:glm>)` `OpenGL:GL` links OpenGL, it locates the system's OpenGL headers and drivers. `glad` links the GLAD lib. `${CMAKE_DL_LIBS}` is CMake variable that changes according to what lib required on host plateform to load dynamic libs at runtime. The whole `$<$<` statment is a `fallback logic`. It evaluates if a `CMake target` named `glfw or glm` exists and links `glfw` or `glm::glm`. OR, if it doesn't exist, look for `glfw3` or the bare target name `glm` instead of the `namespace` one.
-9. If using` Windows`, set Microsoft's compiler to W4, Warning 4. Else, if compiling with `GCC` or some other compiler, use `-Wall, -Wextra, -pedantic, etc`. `target_compile_options(FluidSim PRIVATE "flags here")`
+- 9. If using` Windows`, set Microsoft's compiler to W4, Warning 4. Else, if compiling with `GCC` or some other compiler, use `-Wall, -Wextra, -pedantic, etc`. `target_compile_options(FluidSim PRIVATE "flags here")`

@@ -6,7 +6,7 @@ class StaggeredGrid {
 public:
     void setBndU();
     void setBndV();
-    void setBndDensity(float* d);
+    void setBndPressure();
     void copyPreviousVelocities();
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
     void addForces(int i, int j, double fx, double fy);
@@ -14,6 +14,7 @@ public:
     void project();
     void advectVelocity();
     void injectDensity();
+    void diffuseDensity();
     void advectDensity();
     void fluidSolver();
     std::vector<float> displaySolver(float worldSize, float minScale, float maxScale);
@@ -22,8 +23,8 @@ private:
     int m_nx, m_ny;
     double m_dx, m_dy, m_dz, m_dt;
 
-    std::vector<double> m_d; //density aka Nx * Ny
-    std::vector<double> m_p; //pressure
+    std::vector<double> m_density; //density aka Nx * Ny
+    std::vector<double> m_pressure; //pressure
     std::vector<double> m_u; //x-vel
     std::vector<double> m_v; //y-vel Nx * (Ny + 1)
 
@@ -33,6 +34,8 @@ private:
     std::vector<double> m_uPrev;
     std::vector<double> m_vPrev;
 
+
+    int m_sweepCount = 20;
     glm::vec2 cellToWorldPosition(int i, int j, float worldSize) const;
     double sampleU(int i, int j) const;
     double sampleV(int i, int j) const;
@@ -55,10 +58,7 @@ private:
         return (nx + 2) * (ny + 1);
     }
     //likewise, for future me to know
-    inline int indexDensity(int i, int j) const {
-        return (j + 1) * (m_nx + 2) + (i + 1);
-    }
-    inline int indexPressure(int i, int j) const {
+    inline int indexCenter(int i, int j) const {
         return (j + 1) * (m_nx + 2) + (i + 1);
     }
     inline int indexU(int i, int j) const  {

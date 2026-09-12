@@ -173,15 +173,15 @@ int main()
     glfwSetScrollCallback(handle, scrollCallback);
 
     //StaggeredGrid
-    int nx = 4;
-    int ny = 4;
+    int nx = 8;
+    int ny = 8;
     double dt = 0.016;
-    double dx = 1.0;
+    double gridSpacing = 1.0;
     StaggeredGrid grid(
       nx,
       ny,
       dt,
-      dx
+      gridSpacing
     );
     float worldSize = 1.0f;
     float minScale = 0.02f;
