@@ -31,8 +31,8 @@ private:
     std::vector<double> m_v; //y-vel Nx * (Ny + 1)
 
     //previous values are used for the jos stam backtracking (in time) advection implementation
-    std::vector<double> m_dPrev;
-    std::vector<double> m_pPrev;
+    std::vector<double> m_densityPrev;
+    std::vector<double> m_pressurePrev;
     std::vector<double> m_uPrev;
     std::vector<double> m_vPrev;
 
@@ -75,7 +75,7 @@ private:
         return j * (m_nx + 2) + (i + 1);
     }
 
-    inline glm::vec2 cellToPosition(int i, int j) {
+    inline glm::vec2 cellToPosition(int i, int j) const {
       glm::vec2 position = {(i + 0.5) * m_dx, (j + 0.5) * m_dy};
       return position;
     }

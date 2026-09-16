@@ -94,10 +94,11 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `v` velocity array: `(N_y +1, N_x)` likewise
 - `ghost-cells` will be used for `pressure` and `tangential` velocity, `normal` velocity component won't use ghost-cells because staggering them already puts them in place. 4x4 pressure grid -> 6x6.
 - `ghost-cell` pressure is populated by copying the value from the nearest interior cell. Enforces the zero pressure gradient condition we talked about in the jos stam section.
-- `ghost-cell` tangential velocity copys the value of veloicty from the nearest interior cell, but negative. SO, v_ghost = -v_interior to force the velocity to zero at the wall.
+- `ghost-cell` tangential velocity copies the value of veloicty from the nearest interior cell, but negative. SO, v_ghost = -v_interior to force the velocity to zero at the wall.
 - For face-centered arrays `(u, v)` you need `ghost-cells` for stenciling. For future me refering back to these notes: stenciling is when a computation takes a point (i) and reads the surrounding points `(i +-1 )` to compute the original point's (i) new value. If we don't have ghost-cell's this stenciling mechanic in computation will yield a garbage value at the border of the grids.
 - Advecting will make use of three seperate locations `(u, v and the cell centers)`. Instead of sampling 4 neighbors once, we have to do so 3 different times for `u, v and density`.
 - use indexU, indexV, indexCenter
+- bilinear interpolation is needed to see which 4 grid opints is near your one chosen position and how much weight each 4 points get through a fractional remainder.
 
 ## [August-September 2026] - [Flattening 2D arrays]
 - `i, j` are grid coordinates, differ depending on what we're talking about in this program.

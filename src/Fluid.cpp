@@ -3,8 +3,9 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <glm/glm.hpp>
 
-StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_density(densityCount(nx, ny), 0.0), m_pressure(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_dPrev(densityCount(nx, ny), 0.0), m_pPrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
+StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_density(densityCount(nx, ny), 0.0), m_pressure(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_densityPrev(densityCount(nx, ny), 0.0), m_pressurePrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
 }
 void StaggeredGrid::setBndU () {
@@ -216,8 +217,25 @@ Velocity2D StaggeredGrid::assembleVelocityAtDensity(int i, int j) {
 }
 //pass in velocityatdensity
 double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position){
+  float minX = 0.5 * m_dx;
+  float maxX =  (m_nx - 0.5) * m_dx;
+  float minY = 0.5 * m_dy;
+  float maxY = (m_ny - 0.5) * m_dy;
   float x = position.x - m_dt * velocity.u;
   float y = position.y - m_dt * velocity.v;
-  glm::vec2 previousPosition = glm::vec2(x, y);
+  float clampedX = glm::clamp(x, minX, maxX);
+  float clampedY = glm::clamp(y, minY, maxY);
+  glm::vec2 previousPosition = glm::vec2(clampedX, clampedY);
+  float gridCoordX = (clampedX / m_dx) - 0.5;
+  float gridCoordY = (clampedY / m_dy) - 0.5;
+  int i0 = glm::floor(gridCoordX);
+  int j0 = glm::floor(gridCoordY);
+  int i1 = i0 + 1;
+  int j1 = j0 + 1;
+  float s1 = gridCoordX - i0;
+  float s0 = 1 - s1;
+  float t1 = gridCoordY - j0;
+  float t0 = 1 - t1;
+  return s0 * (t0 * m_densityPrev[indexCenter(i0, j0)] + t1 * m_densityPrev[indexCenter(i0, j1)]) + s1 * ( t0* m_densityPrev[indexCenter(i1, j0)] + t1 * m_densityPrev[indexCenter(i1, j1)]);
 
 }
