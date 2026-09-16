@@ -112,22 +112,52 @@ void StaggeredGrid::project() {
 setBndU();
 setBndV();
 }
+
 void StaggeredGrid::advectVelocity() {
-  int i, j, i0, j0, i1, j1;
-  for (i = 0; i <= m_nx - 1; i++) {
+  int i, j;
+  glm::vec2 position;
+  Velocity2D velocity;
+  //u
+  for (i = 0; i <= m_nx - 1;i++) {
     for (j = 0; j <= m_ny - 1; j++) {
+      position = cellToUPosition(i, j);
+      velocity = assembleVelocityAtU(i, j);
+      m_u[indexU(i, j)] = backtraceAndSampleU(velocity, position);
 
     }
   }
+  setBndU();
+  //v
+  for (i = 0; i <= m_nx - 1; i++) {
+    for (j = 0; j <= m_ny - 1; j++) {
+      position = cellToVPosition(i, j);
+      velocity = assembleVelocityAtV(i, j);
+      m_v[indexV(i, j)] = backtraceAndSampleV(velocity, position);
+    }
+  }
+  setBndV();
 }
-void StaggeredGrid::injectDensity() {
+
+void StaggeredGrid::addDensity() {
 
 }
+
 void StaggeredGrid::diffuseDensity() {
 
 }
-void StaggeredGrid::advectDensity() {
 
+void StaggeredGrid::advectDensity() {
+  int i, j;
+  glm::vec2 position;
+  Velocity2D velocity;
+  for (i = 1; i <= m_nx; i++) {
+    for(j = 1; j <= m_ny; j++) {
+      position = cellToPosition(i, j);
+      velocity = assembleVelocityAtDensity(i, j);
+      m_density[indexCenter(i, j)]= backtraceAndSampleDensity(velocity, position);
+    }
+  }
+  //setBndDensity();
 }
 
 void StaggeredGrid::fluidSolver() {
@@ -139,8 +169,8 @@ void StaggeredGrid::fluidSolver() {
   copyPreviousVelocities();
   diffuseVelocity(0.0001);
   project();
-
-  //advect velocity
+  advectVelocity();
+  project();
   //project velocity
 
   //inject density
@@ -152,6 +182,7 @@ void StaggeredGrid::fluidSolver() {
 std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {
   return buildInstanceData(worldSize, minScale, maxScale);
 }
+
 glm::vec2 StaggeredGrid::cellToWorldPosition(int i, int j, float worldSize) const {
   float distanceFromCenterToEdge = 0.5f;
   float worldX = (((i + distanceFromCenterToEdge) / m_nx ) - distanceFromCenterToEdge) * worldSize;
@@ -159,22 +190,27 @@ glm::vec2 StaggeredGrid::cellToWorldPosition(int i, int j, float worldSize) cons
   glm::vec2 worldPosition = glm::vec2(worldX, worldY);
   return worldPosition;
 }
+
 double StaggeredGrid::sampleU(int i, int j) const {
   double uCenter = (m_u.at(indexU(i, j)) + m_u.at(indexU(i + 1, j))) / 2.0;
   return uCenter;
 }
+
 double StaggeredGrid::sampleV(int i, int j) const {
   double vCenter = (m_v.at(indexV(i, j)) + m_v.at(indexV(i, j +1))) / 2.0;
   return vCenter;
 }
+
 float StaggeredGrid::computeAngle(double u, double v) const {
   float angle = std::atan2(v, u);
   return angle;
 }
+
 float StaggeredGrid::computeMagnitude(double u, double v) const {
   float magnitude = std::sqrt(u*u + v*v);
   return magnitude;
 }
+
 std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale) const {
   std::vector<float> instanceData;
   glm::vec2 worldPosition;
@@ -196,6 +232,7 @@ std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minSc
   }
   return instanceData;
 }
+
 //advection helpers
 Velocity2D StaggeredGrid::assembleVelocityAtU(int i, int j){
   double uValue = m_u[indexU(i, j)];
@@ -203,18 +240,65 @@ Velocity2D StaggeredGrid::assembleVelocityAtU(int i, int j){
   Velocity2D values = {uValue, vValue};
   return values;
 }
+
 Velocity2D StaggeredGrid::assembleVelocityAtV(int i, int j) {
   double uValue = (m_u[indexU(i, j-1)] + m_u[indexU(i + 1, j-1)] + m_u[indexU(i, j)] + m_u[indexU(i+1, j)]) / 4.0;
   double vValue = m_v[indexV(i, j)];
   Velocity2D values = {uValue, vValue};
   return values;
 }
+
 Velocity2D StaggeredGrid::assembleVelocityAtDensity(int i, int j) {
    double uValue = (m_u[indexCenter(i+1, j)] + m_u[indexCenter(i, j)]) / 2.0;
    double vValue = (m_v[indexCenter(i, j)] +  m_v[indexCenter(i, j+1)]) / 2.0;
    Velocity2D velocityValues = {uValue, vValue};
    return velocityValues;
 }
+
+double StaggeredGrid::backtraceAndSampleU(Velocity2D velocity, glm::vec2 position){
+  float minX = 0;
+  float maxX = m_nx * m_dx;
+  float minY = 0.5 * m_dy;
+  float maxY = (m_ny - 0.5) * m_dy;
+  float x = position.x - m_dt * velocity.u;
+  float y = position.y - m_dt * velocity.v;
+  float clampedX = glm::clamp(x, minX, maxX);
+  float clampedY = glm::clamp(y, minY, maxY);
+  float gridCoordX = clampedX / m_dx;
+  float gridCoordY = (clampedY / m_dy) - 0.5;
+  int i0 = glm::floor(gridCoordX);
+  int j0 = glm::floor(gridCoordY);
+  int i1 = i0 + 1;
+  int j1 = j0 + 1;
+  float s1 = gridCoordX - i0;
+  float s0 = 1 - s1;
+  float t1 = gridCoordY - j0;
+  float t0 = 1 - t1;
+  return s0 * (t0 * m_uPrev[indexU(i0, j0)] + t1 * m_uPrev[indexU(i0, j1)]) + s1 * (t0 * m_uPrev[indexU(i1, j0)] + t1 * m_uPrev[indexU(i1, j1)]);
+}
+
+double StaggeredGrid::backtraceAndSampleV(Velocity2D velocity, glm::vec2 position) {
+  float minX = 0.5 * m_dx;
+  float maxX = (m_nx - 0.5) * m_dx;
+  float minY = 0;
+  float maxY = m_ny * m_dy;
+  float x = position.x - m_dt * velocity.u;
+  float y = position.y - m_dt * velocity.v;
+  float clampedX = glm::clamp(x, minX, maxX);
+  float clampedY = glm::clamp(y, minY, maxY);
+  float gridCoordX = (clampedX / m_dx) - 0.5;
+  float gridCoordY = clampedY / m_dy;
+  int i0 = glm::floor(gridCoordX);
+  int j0 = glm::floor(gridCoordY);
+  int i1 = i0 + 1;
+  int j1 = j0 + 1;
+  float s1 = gridCoordX - i0;
+  float s0 = 1 - s1;
+  float t1 = gridCoordY - j0;
+  float t0 = 1 - t1;
+  return s0 * (t0 * m_vPrev[indexV(i0, j0)] + t1 * m_vPrev[indexV(i0, j1)]) + s1 * (t0 * m_vPrev[indexV(i1, j0)] + t1 * m_vPrev[indexV(i1, j1)]);
+}
+
 //pass in velocityatdensity
 double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position){
   float minX = 0.5 * m_dx;
@@ -236,5 +320,4 @@ double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 p
   float t1 = gridCoordY - j0;
   float t0 = 1 - t1;
   return s0 * (t0 * m_densityPrev[indexCenter(i0, j0)] + t1 * m_densityPrev[indexCenter(i0, j1)]) + s1 * ( t0* m_densityPrev[indexCenter(i1, j0)] + t1 * m_densityPrev[indexCenter(i1, j1)]);
-
 }

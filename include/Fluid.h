@@ -16,7 +16,7 @@ public:
     void diffuseVelocity(double diff);
     void project();
     void advectVelocity();
-    void injectDensity();
+    void addDensity();
     void diffuseDensity();
     void advectDensity();
     void fluidSolver();
@@ -49,6 +49,8 @@ private:
     Velocity2D assembleVelocityAtU(int i, int j);
     Velocity2D assembleVelocityAtV(int i, int j);
     Velocity2D assembleVelocityAtDensity(int i, int j);
+    double backtraceAndSampleU(Velocity2D velocity, glm::vec2 position);
+    double backtraceAndSampleV(Velocity2D velocity, glm::vec2 position);
     double backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position);
     //helper
     //density and pressure although the same math is seperated for future me to know, +2 is to account for the ghost cells, returns count of array elements
@@ -79,6 +81,13 @@ private:
       glm::vec2 position = {(i + 0.5) * m_dx, (j + 0.5) * m_dy};
       return position;
     }
-
+    inline glm::vec2 cellToUPosition(int i, int j) const {
+      glm::vec2 position = {i * m_dx, (j + 0.5) * m_dy};
+      return position;
+    }
+    inline glm::vec2 cellToVPosition(int i, int j) const {
+      glm::vec2 position = {(i + 0.5) * m_dx, j * m_dy};
+      return position;
+    }
 
 };
