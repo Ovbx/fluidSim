@@ -10,14 +10,16 @@ public:
     void setBndU();
     void setBndV();
     void setBndPressure();
+    void setBndDensity();
     void copyPreviousVelocities();
+    void copyPreviousDensities();
     StaggeredGrid(int nx, int ny, double dt, double gridSpacing);
     void addForces(int i, int j, double fx, double fy);
     void diffuseVelocity(double diff);
     void project();
     void advectVelocity();
-    void addDensity();
-    void diffuseDensity();
+    void addDensity(int i, int j, double source);
+    void diffuseDensity(double diff);
     void advectDensity();
     void fluidSolver();
     std::vector<float> displaySolver(float worldSize, float minScale, float maxScale);

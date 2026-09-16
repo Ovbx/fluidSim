@@ -44,12 +44,23 @@ void StaggeredGrid::setBndPressure() {
     m_pressure.at(indexCenter(j, m_ny))= m_pressure.at(indexCenter(j, m_ny - 1));
   }
 }
-
+void StaggeredGrid::setBndDensity() {
+  for (int i = 0; i <= m_ny; i++) {
+    m_density[indexCenter(-1, i)] = m_density[indexCenter(0,i)];
+    m_density[indexCenter(m_nx, i)] = m_density[indexCenter(m_nx - 1, i)];
+  }
+  for (int j = 0; j <= m_nx; j++) {
+    m_density[indexCenter(j, -1)] = m_density[indexCenter(j, 0)];
+    m_density[indexCenter(j, m_ny)] = m_density[indexCenter(j, m_ny -1)];
+  }
+}
 void StaggeredGrid::copyPreviousVelocities() {
     m_uPrev = m_u;
     m_vPrev = m_v;
 }
-
+void StaggeredGrid::copyPreviousDensities() {
+  m_densityPrev = m_density;
+}
 
 void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
     //m_u[] is a std::vector:operator[], it does pointer arithmatic to gets the address, dereferences it, and give the value stored as a reference.
@@ -64,7 +75,7 @@ void StaggeredGrid::diffuseVelocity(double diff) {
     double denominator = 1.0 + 4.0 * rateOfDiffusion;
     //similar to jos stam's implementation in "Real-Time Fluid Dynamics for Games"
     for (k = 0; k < m_sweepCount; k++) {
-        for (i = 1; i <= m_nx - 1; i++) {
+        for (i = 0; i <= m_nx - 1; i++) {
             for (j = 0; j <= m_ny - 1; j++) {
                 //gauss-seidel relaxation
                 m_u.at(indexU(i, j)) = (m_uPrev.at(indexU(i, j)) + rateOfDiffusion * ( m_u.at(indexU(i - 1, j)) + m_u.at(indexU(i + 1, j)) + m_u.at(indexU(i, j - 1)) + m_u.at(indexU(i, j + 1)))) / denominator;
@@ -126,7 +137,6 @@ void StaggeredGrid::advectVelocity() {
 
     }
   }
-  setBndU();
   //v
   for (i = 0; i <= m_nx - 1; i++) {
     for (j = 0; j <= m_ny - 1; j++) {
@@ -135,29 +145,39 @@ void StaggeredGrid::advectVelocity() {
       m_v[indexV(i, j)] = backtraceAndSampleV(velocity, position);
     }
   }
+  setBndU();
   setBndV();
 }
 
-void StaggeredGrid::addDensity() {
-
+void StaggeredGrid::addDensity(int i, int j, double source) {
+  m_density[indexCenter(i, j)] += m_dt * source;
 }
-
-void StaggeredGrid::diffuseDensity() {
-
+void StaggeredGrid::diffuseDensity(double diff) {
+  int i, j, k;
+  double rateOfDiffusion = m_dt * diff / (m_dx * m_dy);
+  double denominator = 1.0 + 4.0 * rateOfDiffusion;
+  for (k = 0; k <= m_sweepCount; k++) {
+    for (i = 0; i <= m_nx - 1; i++) {
+      for (j = 0; j <= m_ny - 1; j++) {
+        m_density[indexCenter(i, j)] = (m_densityPrev[indexCenter(i, j)] + rateOfDiffusion * (m_density[indexCenter(i-1, j)] + m_density[indexCenter(i + 1, j)] + m_density[indexCenter(i, j-1)] + m_density[indexCenter(i, j + 1)])) / denominator;
+      }
+    }
+    setBndDensity();
+  }
 }
 
 void StaggeredGrid::advectDensity() {
   int i, j;
   glm::vec2 position;
   Velocity2D velocity;
-  for (i = 1; i <= m_nx; i++) {
-    for(j = 1; j <= m_ny; j++) {
+  for (i = 1; i <= m_nx - 2; i++) {
+    for(j = 1; j <= m_ny - 2; j++) {
       position = cellToPosition(i, j);
       velocity = assembleVelocityAtDensity(i, j);
-      m_density[indexCenter(i, j)]= backtraceAndSampleDensity(velocity, position);
+      m_density[indexCenter(i, j)] = backtraceAndSampleDensity(velocity, position);
     }
   }
-  //setBndDensity();
+  setBndDensity();
 }
 
 void StaggeredGrid::fluidSolver() {
@@ -171,11 +191,10 @@ void StaggeredGrid::fluidSolver() {
   project();
   advectVelocity();
   project();
-  //project velocity
-
-  //inject density
-  //diffuse density
-  //advect density
+  addDensity(4, 4, 30);
+  copyPreviousDensities();
+  diffuseDensity(0.0001);
+  advectDensity();
 }
 
 //i, j to x, y
@@ -256,68 +275,69 @@ Velocity2D StaggeredGrid::assembleVelocityAtDensity(int i, int j) {
 }
 
 double StaggeredGrid::backtraceAndSampleU(Velocity2D velocity, glm::vec2 position){
-  float minX = 0;
+  float minX = 0.0f;
   float maxX = m_nx * m_dx;
-  float minY = 0.5 * m_dy;
-  float maxY = (m_ny - 0.5) * m_dy;
+  float minY = 0.5f * m_dy;
+  float maxY = (m_ny - 0.5f) * m_dy;
   float x = position.x - m_dt * velocity.u;
   float y = position.y - m_dt * velocity.v;
   float clampedX = glm::clamp(x, minX, maxX);
   float clampedY = glm::clamp(y, minY, maxY);
   float gridCoordX = clampedX / m_dx;
-  float gridCoordY = (clampedY / m_dy) - 0.5;
+  float gridCoordY = (clampedY / m_dy) - 0.5f;
   int i0 = glm::floor(gridCoordX);
   int j0 = glm::floor(gridCoordY);
   int i1 = i0 + 1;
   int j1 = j0 + 1;
   float s1 = gridCoordX - i0;
-  float s0 = 1 - s1;
+  float s0 = 1.0f - s1;
   float t1 = gridCoordY - j0;
-  float t0 = 1 - t1;
+  float t0 = 1.0f - t1;
   return s0 * (t0 * m_uPrev[indexU(i0, j0)] + t1 * m_uPrev[indexU(i0, j1)]) + s1 * (t0 * m_uPrev[indexU(i1, j0)] + t1 * m_uPrev[indexU(i1, j1)]);
 }
 
 double StaggeredGrid::backtraceAndSampleV(Velocity2D velocity, glm::vec2 position) {
-  float minX = 0.5 * m_dx;
-  float maxX = (m_nx - 0.5) * m_dx;
-  float minY = 0;
+  float minX = 0.5f * m_dx;
+  float maxX = (m_nx - 0.5f) * m_dx;
+  float minY = 0.0f;
   float maxY = m_ny * m_dy;
   float x = position.x - m_dt * velocity.u;
   float y = position.y - m_dt * velocity.v;
   float clampedX = glm::clamp(x, minX, maxX);
   float clampedY = glm::clamp(y, minY, maxY);
-  float gridCoordX = (clampedX / m_dx) - 0.5;
+  float gridCoordX = (clampedX / m_dx) - 0.5f;
   float gridCoordY = clampedY / m_dy;
   int i0 = glm::floor(gridCoordX);
   int j0 = glm::floor(gridCoordY);
   int i1 = i0 + 1;
   int j1 = j0 + 1;
   float s1 = gridCoordX - i0;
-  float s0 = 1 - s1;
+  float s0 = 1.0f - s1;
   float t1 = gridCoordY - j0;
-  float t0 = 1 - t1;
+  float t0 = 1.0f - t1;
   return s0 * (t0 * m_vPrev[indexV(i0, j0)] + t1 * m_vPrev[indexV(i0, j1)]) + s1 * (t0 * m_vPrev[indexV(i1, j0)] + t1 * m_vPrev[indexV(i1, j1)]);
 }
 
 //pass in velocityatdensity
 double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position){
-  float minX = 0.5 * m_dx;
-  float maxX =  (m_nx - 0.5) * m_dx;
-  float minY = 0.5 * m_dy;
-  float maxY = (m_ny - 0.5) * m_dy;
+  float minX = 0.5f * m_dx;
+  float maxX =  (m_nx - 0.5f) * m_dx;
+  float minY = 0.5f * m_dy;
+  float maxY = (m_ny - 0.5f) * m_dy;
   float x = position.x - m_dt * velocity.u;
   float y = position.y - m_dt * velocity.v;
   float clampedX = glm::clamp(x, minX, maxX);
   float clampedY = glm::clamp(y, minY, maxY);
-  float gridCoordX = (clampedX / m_dx) - 0.5;
-  float gridCoordY = (clampedY / m_dy) - 0.5;
+  float gridCoordX = (clampedX / m_dx) - 0.5f;
+  float gridCoordY = (clampedY / m_dy) - 0.5f;
   int i0 = glm::floor(gridCoordX);
   int j0 = glm::floor(gridCoordY);
   int i1 = i0 + 1;
   int j1 = j0 + 1;
+
   float s1 = gridCoordX - i0;
-  float s0 = 1 - s1;
+  float s0 = 1.0f - s1;
   float t1 = gridCoordY - j0;
-  float t0 = 1 - t1;
-  return s0 * (t0 * m_densityPrev[indexCenter(i0, j0)] + t1 * m_densityPrev[indexCenter(i0, j1)]) + s1 * ( t0* m_densityPrev[indexCenter(i1, j0)] + t1 * m_densityPrev[indexCenter(i1, j1)]);
+  float t0 = 1.0f - t1;
+  return s0 * (t0 * m_densityPrev[indexCenter(i0, j0)] + t1 * m_densityPrev[indexCenter(i0, j1)]) + s1 * ( t0 * m_densityPrev[indexCenter(i1, j0)] + t1 * m_densityPrev[indexCenter(i1, j1)]);
 }
