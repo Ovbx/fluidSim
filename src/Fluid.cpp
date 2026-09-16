@@ -112,7 +112,12 @@ setBndU();
 setBndV();
 }
 void StaggeredGrid::advectVelocity() {
+  int i, j, i0, j0, i1, j1;
+  for (i = 0; i <= m_nx - 1; i++) {
+    for (j = 0; j <= m_ny - 1; j++) {
 
+    }
+  }
 }
 void StaggeredGrid::injectDensity() {
 
@@ -142,6 +147,7 @@ void StaggeredGrid::fluidSolver() {
   //advect density
 }
 
+//i, j to x, y
 std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {
   return buildInstanceData(worldSize, minScale, maxScale);
 }
@@ -188,4 +194,30 @@ std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minSc
     }
   }
   return instanceData;
+}
+//advection helpers
+Velocity2D StaggeredGrid::assembleVelocityAtU(int i, int j){
+  double uValue = m_u[indexU(i, j)];
+  double vValue = (m_v[indexV(i-1, j)] + m_v[indexV(i, j)] + m_v[indexV(i-1, j+1)] + m_v[indexV(i, j+1)]) / 4.0;
+  Velocity2D values = {uValue, vValue};
+  return values;
+}
+Velocity2D StaggeredGrid::assembleVelocityAtV(int i, int j) {
+  double uValue = (m_u[indexU(i, j-1)] + m_u[indexU(i + 1, j-1)] + m_u[indexU(i, j)] + m_u[indexU(i+1, j)]) / 4.0;
+  double vValue = m_v[indexV(i, j)];
+  Velocity2D values = {uValue, vValue};
+  return values;
+}
+Velocity2D StaggeredGrid::assembleVelocityAtDensity(int i, int j) {
+   double uValue = (m_u[indexCenter(i+1, j)] + m_u[indexCenter(i, j)]) / 2.0;
+   double vValue = (m_v[indexCenter(i, j)] +  m_v[indexCenter(i, j+1)]) / 2.0;
+   Velocity2D velocityValues = {uValue, vValue};
+   return velocityValues;
+}
+//pass in velocityatdensity
+double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position){
+  float x = position.x - m_dt * velocity.u;
+  float y = position.y - m_dt * velocity.v;
+  glm::vec2 previousPosition = glm::vec2(x, y);
+
 }

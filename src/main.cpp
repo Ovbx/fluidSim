@@ -185,7 +185,7 @@ int main()
     );
     float worldSize = 1.0f;
     float minScale = 0.02f;
-    float maxScale = 0.06f;
+    float maxScale = 0.04f;
     std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
     arrow.configureInstancing(initialData.data(), initialData.size() / 4);
 

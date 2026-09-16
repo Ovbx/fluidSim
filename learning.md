@@ -60,6 +60,15 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - Boundary conditions: reapplied after every single `Gauss-seidel` sweep to prevent numerical errors.
 - What are the boundary conditions? Solid walls: no flow exit walls, horizontal component of velocity 0 on vertical walls, vertical component of velocity is 0 on horizontal walls. Density and other fields assume continuity.
 - The project step forces velocity to be `mass conserving`. This step of the fluid solver is where the `Poisson` equation is solved and also applied. Steps: `find div` from current u, v -> `find pressure` from gauss-seidel using div and neighboring pressures -> `correct` the `u, and v` using our new `pressure gradient`.
+- Advection: trace each point of the field backwards in time. Responsible for moving fluid mass around the grid. Fluid mass in this case will be the velocity, so we move velocity. If water moves, stuff moves with it (velocity). Don't push things forward explicitly, but look backwards along the velocity, find the source's location, and copy that value.
+- Steps for Advection:
+-  1. pick grid point and gather the current velocity from it.
+- 2. Walk backwards so `prev position = pos - dt * velocity` dt * velocity is just position so it's current pos - change in position.
+- 3. Clamp the prev position, avoiding invalid sample region.
+- 4. Interpolate field's previous values at previous position. Bilinear?
+- 5. assign that interpolated value over at the original point.
+- Advection: disturbance in the fluid proporgates according to expression `-(u * del)u`, Navier-stokes is `non-linear` because of this, meaning it's harder to solve step-by-step. NOn-linear most importantly means that `small error` in the vleocity can `cause` the `advection` to `become stronger`, creating the next to be stronger, resulting in a sor tof `domino effect`, ultimately leading to a `chaotic, unstable simulation`. Classically, Foster and Metaxas solved this by using finite differncing, the downside of which is that the time step has to be small enough s.t. `delta t < delta tao / absu`. Anyways, the jos stam implementation uses a different approach to this, `method of charactistics`, which we talked about in this section. In hindsight, I should have stitched the sections together but it doesn't matter because I'm likely the only one reading this.
+- To back trace, I need to take i and j and convert i tto grid point's fixed world position. Needs both surrounding grid indices so i0, i1, j0, j1.
 
 ## [August 2026] - [Stack vs. heap]
 - `Stack and heap` is both memory related. Grid array will be heap-allocated.
@@ -86,14 +95,18 @@ Running log of concepts learned and bugs debugged while building FluidSim.
 - `ghost-cells` will be used for `pressure` and `tangential` velocity, `normal` velocity component won't use ghost-cells because staggering them already puts them in place. 4x4 pressure grid -> 6x6.
 - `ghost-cell` pressure is populated by copying the value from the nearest interior cell. Enforces the zero pressure gradient condition we talked about in the jos stam section.
 - `ghost-cell` tangential velocity copys the value of veloicty from the nearest interior cell, but negative. SO, v_ghost = -v_interior to force the velocity to zero at the wall.
-- For face-centered arrays (u, v) you need `ghost-cells` for stenciling. For future me refering back to these notes: stenciling is when a computation takes a point (i) and reads the surrounding points (i +-1 ) to compute the original point's (i) new value. If we don't have ghost-cell's this stenciling mechanic in computation will yield a garbage value at the border of the grids.
-## [August 2026] - [Flattening 2D arrays]
+- For face-centered arrays `(u, v)` you need `ghost-cells` for stenciling. For future me refering back to these notes: stenciling is when a computation takes a point (i) and reads the surrounding points `(i +-1 )` to compute the original point's (i) new value. If we don't have ghost-cell's this stenciling mechanic in computation will yield a garbage value at the border of the grids.
+- Advecting will make use of three seperate locations `(u, v and the cell centers)`. Instead of sampling 4 neighbors once, we have to do so 3 different times for `u, v and density`.
+- use indexU, indexV, indexCenter
+
+## [August-September 2026] - [Flattening 2D arrays]
 - `i, j` are grid coordinates, differ depending on what we're talking about in this program.
 - `width` depends on how much elements in one row of specific array.
 - General row-major flattening is taking a `2D array -> 1D array`. `(i, j)` -> `single` int output
 - Find where `(i, j)` lives first, then attempt to reduce to `1d` by skipping `j` rows, `(j * row width)`, then move `i` over.
 - Recap: `index` = `(j * width) + i`, offset = row * row_width + column, j = which row, width = how long, we have + 1 for width because we have nx/ny on wall faces.
 - Application for project: density flattening formula (cell center) = (j * nx) + i, xVelocity Flattening (cell face) = j * (nx + 1) + i, yVelocity Flattening (cell face) = (j * width) + i
+- If we want to make a function that does the stenciling, a.k.a the neighborhood search for the advection, we have to understand how exactly (i, j) converts to (x,y) or the other way around. If we have an x,y grid where +x = right, +y = down; we can for example put a u-point at (1, 1.5), which is at the cneter of a u face, down 1.5 means its in the center in the y direction of the cell. we can convert that to i, j by using indexU and indexV. We can then find the nearest 4 v-neighbors which are v(i-1, j), v(i, j), v(i-1, j+1), and v(i, j+1), sequentially, this is the top left, top right, bottom left, and bottom right, each in the center of their grid in the x direction and on the v-face in the y-direction. Now, our assembleVelocityAtU(i, j) is fully specified. uVal = m_u[indexU(i,j)] and vVal = the whole m_v[indexV(i-1, j)], m_v[indexV(i, j)], m_v[indexV(i -1, j+1)], m_v[indexV(i, j+1)].
 ## [August 2026] - [Performance]
 - `Indexing` is used to `simulate` a `2D grid` while storing all the elements in a `single` continuous block of memory. Ex: using std::vector<double> m_u with an indexing function like indexU(i, j). Why? Using alternative method like std::vector<std::vector<double>> is not only `fragmented` but is slower because of `double pointer indirection` and slower `cache locality`. Ex: My first C++ project about simulating collisions between bouncing objects used std::vector<std::vector<double>>, `fragmented` memory chunks worked fine when there were less operations done on the vector, but performance dropped off drastically as operations scaled.
 - `Memory allocation complexity` of flat vector compared to a nested vector is `O(1)` compared to `O(N)`, N allocations made per N rows. `Pointer indirection count` was `1` for `flat` compared to `2` for `nested`, with 1 being staight to the data, while to had to jump to the row pointer, then jump to element.
