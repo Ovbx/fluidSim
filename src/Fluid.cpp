@@ -225,7 +225,6 @@ double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 p
   float y = position.y - m_dt * velocity.v;
   float clampedX = glm::clamp(x, minX, maxX);
   float clampedY = glm::clamp(y, minY, maxY);
-  glm::vec2 previousPosition = glm::vec2(clampedX, clampedY);
   float gridCoordX = (clampedX / m_dx) - 0.5;
   float gridCoordY = (clampedY / m_dy) - 0.5;
   int i0 = glm::floor(gridCoordX);
