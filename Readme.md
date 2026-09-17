@@ -1,6 +1,11 @@
 
+# 128x128 2d vector field standard spectrometry colorscheme
 
-https://github.com/user-attachments/assets/512893e5-dec4-48c0-94aa-a2b8adbbbae2
+https://github.com/user-attachments/assets/9613bf6f-e0ce-4615-a5d5-ebb9a6e48352
+
+
+
+
 
 # FluidSim
 
