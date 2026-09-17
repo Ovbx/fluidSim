@@ -51,7 +51,7 @@ void Mesh::configureInstancing(const float* instanceData, const size_t instanceC
 
   glVertexAttribPointer(
     2,
-    m_numberOfValuesPerInstance,
+    4,
     GL_FLOAT,
     GL_FALSE,
     sizeof(float) * m_numberOfValuesPerInstance,
@@ -59,6 +59,17 @@ void Mesh::configureInstancing(const float* instanceData, const size_t instanceC
   );
   glEnableVertexAttribArray(2);
   glVertexAttribDivisor(2, 1);
+
+  glVertexAttribPointer(
+    3,
+    1,
+    GL_FLOAT,
+    GL_FALSE,
+    sizeof(float) * m_numberOfValuesPerInstance,
+    (void*)(sizeof(float) * 4)
+  );
+  glEnableVertexAttribArray(3);
+  glVertexAttribDivisor(3, 1);
 }
 void Mesh::updateInstanceData(const float* data, const size_t count) {
 

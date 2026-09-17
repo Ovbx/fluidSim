@@ -39,6 +39,7 @@ const char* instancedVertexShaderSource = R"(
   layout (location = 0) in vec3 aPos;
   layout (location = 1) in vec3 aColor;
   layout (location = 2) in vec4 instanceData;
+  layout (location = 3) in float colorT;
 
   out vec3 ourColor;
 
@@ -46,7 +47,22 @@ const char* instancedVertexShaderSource = R"(
   uniform mat4 projection;
 
   void main () {
-    ourColor = aColor;
+    vec3 blue = vec3(0, 0, 1);
+    vec3 green = vec3(0, 1, 0);
+    vec3 yellow = vec3(1, 1, 0);
+    vec3 red = vec3(1, 0, 0);
+
+    vec3 color;
+    if (colorT < 0.33) {
+      color = mix(blue, green, colorT / 0.33);
+    }
+    else if (colorT < 0.66) {
+      color = mix(green, yellow, (colorT - 0.33) / 0.33);
+    }
+    else {
+      color = mix(yellow, red, (colorT - 0.66) / 0.33);
+    }
+    ourColor = color;
     float angle = instanceData.z;
     float scale = instanceData.w;
     float cosOfInstanceData = cos(angle);
@@ -173,9 +189,9 @@ int main()
     glfwSetScrollCallback(handle, scrollCallback);
 
     //StaggeredGrid
-    int nx = 8;
-    int ny = 8;
-    double dt = 0.016;
+    int nx = 128;
+    int ny = 128;
+    double dt = 0.16;
     double gridSpacing = 1.0;
     StaggeredGrid grid(
       nx,
@@ -184,10 +200,11 @@ int main()
       gridSpacing
     );
     float worldSize = 1.0f;
-    float minScale = 0.02f;
-    float maxScale = 0.04f;
+    float minScale = 0.005f;
+    float maxScale = 0.02f;
+    int numberOfValuesPerInstance = 5;
     std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
-    arrow.configureInstancing(initialData.data(), initialData.size() / 4);
+    arrow.configureInstancing(initialData.data(), initialData.size() / numberOfValuesPerInstance);
 
     while(!window.shouldClose()) {
         processInput(handle);
@@ -195,7 +212,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         grid.fluidSolver();
         std::vector<float> frameData = grid.displaySolver(worldSize, minScale, maxScale);
-        arrow.updateInstanceData(frameData.data(), frameData.size() / 4);
+        arrow.updateInstanceData(frameData.data(), frameData.size() / numberOfValuesPerInstance);
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
         drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, nx * ny);
 

@@ -183,23 +183,27 @@ void StaggeredGrid::advectDensity() {
 void StaggeredGrid::fluidSolver() {
   static bool forceApplied = false;
   if (!forceApplied) {
-    addForces(2, 2, 25, 50);
-    forceApplied = true;
+    addForces(8, 10, 100, 50);
+    addForces(10, 25, 50, 30);
+    forceApplied = false;
   }
   copyPreviousVelocities();
-  diffuseVelocity(0.0001);
+  diffuseVelocity(0.3);
   project();
   advectVelocity();
   project();
-  addDensity(4, 4, 30);
+  addDensity(16, 30, 10);
   copyPreviousDensities();
-  diffuseDensity(0.0001);
+  diffuseDensity(0.3);
   advectDensity();
 }
 
 //i, j to x, y
 std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {
-  return buildInstanceData(worldSize, minScale, maxScale);
+  float smoothFactor = 0.1f;
+  float maxMagnitudeThisFrame = findMaxMagnitude();
+  float m_smoothedMaxMagnitude = m_smoothedMaxMagnitude + smoothFactor * (maxMagnitudeThisFrame - m_smoothedMaxMagnitude);
+  return buildInstanceData(worldSize, minScale, maxScale, m_smoothedMaxMagnitude);
 }
 
 glm::vec2 StaggeredGrid::cellToWorldPosition(int i, int j, float worldSize) const {
@@ -230,10 +234,28 @@ float StaggeredGrid::computeMagnitude(double u, double v) const {
   return magnitude;
 }
 
-std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale) const {
+float StaggeredGrid::findMaxMagnitude() const {
+  int i, j;
+  double u, v;
+  float magnitude;
+  float largestMagnitude = 0.0f;
+  for (i = 0; i < m_nx; i++) {
+    for (j = 0; j < m_ny; j++) {
+      u = sampleU(i, j);
+      v = sampleV(i, j);
+      magnitude = computeMagnitude(u, v);
+      if (magnitude > largestMagnitude) {
+        largestMagnitude = magnitude;
+      }
+    }
+  }
+  return largestMagnitude;
+}
+
+std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale, float maxMagnitudeThisFrame) const {
   std::vector<float> instanceData;
   glm::vec2 worldPosition;
-  float angle, magnitude, scale;
+  float angle, magnitude, normalizedMagnitude, scale;
   double u, v;
   for (int i = 0; i < m_nx; i++) {
     for (int j = 0; j < m_ny; j++) {
@@ -241,12 +263,23 @@ std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minSc
       v = sampleV(i, j);
       angle = computeAngle(u, v);
       magnitude = computeMagnitude(u, v);
-      scale = std::clamp(static_cast<float>(magnitude), minScale, maxScale);
+
+      //color instanceData
+      if (maxMagnitudeThisFrame > 0.0f) {
+        normalizedMagnitude = glm::clamp(magnitude / maxMagnitudeThisFrame, 0.0f, 1.0f);
+        normalizedMagnitude = pow(normalizedMagnitude, 0.5f);
+      }
+      else {
+        normalizedMagnitude = 0.0f;
+      }
+      //the rest of the instanceData
+      scale = glm::clamp(static_cast<float>(magnitude), minScale, maxScale);
       worldPosition = cellToWorldPosition(i, j, worldSize);
       instanceData.push_back(worldPosition.x);
       instanceData.push_back(worldPosition.y);
       instanceData.push_back(angle);
       instanceData.push_back(scale);
+      instanceData.push_back(normalizedMagnitude);
     }
   }
   return instanceData;

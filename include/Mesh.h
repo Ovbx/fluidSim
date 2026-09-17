@@ -18,5 +18,5 @@ private:
     GLuint m_EBO;
     GLsizei m_indexCount;
     GLuint m_instanceVBO;
-    int m_numberOfValuesPerInstance = 4;
+    int m_numberOfValuesPerInstance = 5;
 };
