@@ -64,9 +64,9 @@ CMake
 - [x] Orbit Camera (spherical coordinates, mouse look + scroll zoom)
 - [x] Quad rendering
 - [x] Cube rendering (EBO, depth test, GLM transforms)
-- [ ] Fluid solver: advection
+- [x] Fluid solver: advection
 - [x] Fluid solver: diffusion
-- [ ] Fluid solver: pressure projection
+- [x] Fluid solver: pressure projection
 - [ ] 3D density texture + ray marching
 - [ ] Joystick input → force injection
 - [ ] ESP32 + MPU6050 IMU input (hardware track, separate)
