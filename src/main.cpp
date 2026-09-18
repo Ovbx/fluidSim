@@ -13,7 +13,7 @@
 #include "Input.h"
 #include "meshShape.h"
 #include "Fluid.h"
-
+#include "tracy/Tracy.hpp"
 //vertex stuff
 const char *vertexShaderSource = R"(
 #version 330 core
@@ -217,6 +217,8 @@ int main()
         drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, nx * ny);
 
         window.swapBuffers();
+        //profiling using tracy
+        FrameMark;
         window.pollEvents();
     }
 

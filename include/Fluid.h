@@ -38,15 +38,15 @@ private:
     std::vector<double> m_uPrev;
     std::vector<double> m_vPrev;
 
-    float m_smoothedMaxMagnitude = 0.0f;
-    int m_sweepCount = 20;
+    mutable float m_smoothedMaxMagnitude = 0.0f;
+    int m_sweepCount = 10;
     glm::vec2 cellToWorldPosition(int i, int j, float worldSize) const;
     double sampleU(int i, int j) const;
     double sampleV(int i, int j) const;
     float computeAngle(double u, double v) const;
     float computeMagnitude(double u, double v) const;
     float findMaxMagnitude() const;
-    std::vector<float> buildInstanceData(float worldSize, float minScale, float maxScale, float maxMagnitudeThisFrame) const;
+    std::vector<float> buildInstanceData(float worldSize, float minScale, float maxScale) const;
 
     //advection
     Velocity2D assembleVelocityAtU(int i, int j);

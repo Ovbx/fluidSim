@@ -48,6 +48,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
+find_package(tracy QUIET)
+if(NOT tracy_FOUND)
+  message(STATUS "Tracy profiler not found locally... Downloading via FetchContent...")
+  set(TRACY_ENABLE ON CACHE BOOL "Enable Tracy profiling" FORCE)
+  FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy
+    GIT_TAG v0.14.1
+  )
+  FetchContent_MakeAvailable(tracy)
+endif()
 
 find_package(OpenGL REQUIRED)
 
@@ -72,13 +83,15 @@ target_link_libraries(FluidSim PRIVATE
   ${CMAKE_DL_LIBS}
   $<$<TARGET_EXISTS:glfw>:glfw> $<$<NOT:$<TARGET_EXISTS:glfw>>:glfw3>
     $<$<TARGET_EXISTS:glm::glm>:glm::glm> $<$<NOT:$<TARGET_EXISTS:glm::glm>>:glm>
+  Tracy::TracyClient
 )
 
-
+target_compile_definitions(FluidSim PRIVATE TRACY_ENABLE)
 if (MSVC)
   target_compile_options(FluidSim PRIVATE /W4)
 else()
-  target_compile_options(FluidSim PRIVATE -Wall -Wextra -pedantic -Wno-unused-variable -Wno-unused-parameter)
+  target_compile_options(FluidSim PRIVATE -Wall -Wextra -pedantic -Wno-unused-variable -Wno-unused-parameter -O2)
+
 endif()
 
 

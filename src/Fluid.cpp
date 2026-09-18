@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <glm/glm.hpp>
-
+#include "tracy/Tracy.hpp"
 StaggeredGrid::StaggeredGrid(int nx, int ny, double dt, double gridSpacing) : m_nx(nx), m_ny(ny), m_dx(gridSpacing), m_dy(gridSpacing), m_dt(dt), m_density(densityCount(nx, ny), 0.0), m_pressure(pressureCount(nx, ny), 0.0),m_u(uCount(nx, ny), 0.0), m_v(vCount(nx, ny), 0.0), m_densityPrev(densityCount(nx, ny), 0.0), m_pressurePrev(pressureCount(nx, ny), 0.0), m_uPrev(uCount(nx, ny), 0.0), m_vPrev(vCount(nx, ny), 0.0)   {
     //hello world
 }
@@ -69,6 +69,7 @@ void StaggeredGrid::addForces(int i, int j, double fx, double fy) {
 }
 
 void StaggeredGrid::diffuseVelocity(double diff) {
+    ZoneScoped;
     int i, j, k;
     //discretized rate of diffusion per grid cell
     double rateOfDiffusion = m_dt * diff / (m_dx * m_dy);
@@ -93,6 +94,7 @@ void StaggeredGrid::diffuseVelocity(double diff) {
     }
 }
 void StaggeredGrid::project() {
+  ZoneScoped;
   int i, j, k;
   double h = 1.0 / m_nx;
   std::vector<double> div(pressureCount(m_nx, m_ny), 0.0);
@@ -125,6 +127,7 @@ setBndV();
 }
 
 void StaggeredGrid::advectVelocity() {
+  ZoneScoped;
   int i, j;
   glm::vec2 position;
   Velocity2D velocity;
@@ -150,9 +153,11 @@ void StaggeredGrid::advectVelocity() {
 }
 
 void StaggeredGrid::addDensity(int i, int j, double source) {
+  ZoneScoped;
   m_density[indexCenter(i, j)] += m_dt * source;
 }
 void StaggeredGrid::diffuseDensity(double diff) {
+  ZoneScoped;
   int i, j, k;
   double rateOfDiffusion = m_dt * diff / (m_dx * m_dy);
   double denominator = 1.0 + 4.0 * rateOfDiffusion;
@@ -167,6 +172,7 @@ void StaggeredGrid::diffuseDensity(double diff) {
 }
 
 void StaggeredGrid::advectDensity() {
+  ZoneScoped;
   int i, j;
   glm::vec2 position;
   Velocity2D velocity;
@@ -181,29 +187,26 @@ void StaggeredGrid::advectDensity() {
 }
 
 void StaggeredGrid::fluidSolver() {
+  ZoneScoped;
   static bool forceApplied = false;
   if (!forceApplied) {
-    addForces(8, 10, 100, 50);
-    addForces(10, 25, 50, 30);
+    addForces(8, 8, 50, 15);
     forceApplied = false;
   }
   copyPreviousVelocities();
-  diffuseVelocity(0.3);
+  diffuseVelocity(0.001);
   project();
   advectVelocity();
   project();
-  addDensity(16, 30, 10);
+  addDensity(10, 10, 5);
   copyPreviousDensities();
-  diffuseDensity(0.3);
+  diffuseDensity(0.0001);
   advectDensity();
 }
 
 //i, j to x, y
 std::vector<float> StaggeredGrid::displaySolver(float worldSize, float minScale, float maxScale) {
-  float smoothFactor = 0.1f;
-  float maxMagnitudeThisFrame = findMaxMagnitude();
-  float m_smoothedMaxMagnitude = m_smoothedMaxMagnitude + smoothFactor * (maxMagnitudeThisFrame - m_smoothedMaxMagnitude);
-  return buildInstanceData(worldSize, minScale, maxScale, m_smoothedMaxMagnitude);
+  return buildInstanceData(worldSize, minScale, maxScale);
 }
 
 glm::vec2 StaggeredGrid::cellToWorldPosition(int i, int j, float worldSize) const {
@@ -236,13 +239,12 @@ float StaggeredGrid::computeMagnitude(double u, double v) const {
 
 float StaggeredGrid::findMaxMagnitude() const {
   int i, j;
-  double u, v;
   float magnitude;
   float largestMagnitude = 0.0f;
-  for (i = 0; i < m_nx; i++) {
+  for(i = 0; i < m_nx; i++) {
     for (j = 0; j < m_ny; j++) {
-      u = sampleU(i, j);
-      v = sampleV(i, j);
+      double u = sampleU(i, j);
+      double v = sampleV(i, j);
       magnitude = computeMagnitude(u, v);
       if (magnitude > largestMagnitude) {
         largestMagnitude = magnitude;
@@ -252,10 +254,13 @@ float StaggeredGrid::findMaxMagnitude() const {
   return largestMagnitude;
 }
 
-std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale, float maxMagnitudeThisFrame) const {
+std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minScale, float maxScale) const {
   std::vector<float> instanceData;
   glm::vec2 worldPosition;
   float angle, magnitude, normalizedMagnitude, scale;
+  float maxMagnitudeThisFrame = findMaxMagnitude();
+  float smoothFactor = 0.1f;
+  m_smoothedMaxMagnitude = m_smoothedMaxMagnitude + smoothFactor * (maxMagnitudeThisFrame - m_smoothedMaxMagnitude);
   double u, v;
   for (int i = 0; i < m_nx; i++) {
     for (int j = 0; j < m_ny; j++) {
@@ -263,10 +268,9 @@ std::vector<float> StaggeredGrid::buildInstanceData(float worldSize, float minSc
       v = sampleV(i, j);
       angle = computeAngle(u, v);
       magnitude = computeMagnitude(u, v);
-
       //color instanceData
-      if (maxMagnitudeThisFrame > 0.0f) {
-        normalizedMagnitude = glm::clamp(magnitude / maxMagnitudeThisFrame, 0.0f, 1.0f);
+      if (m_smoothedMaxMagnitude > 0.0f) {
+        normalizedMagnitude = glm::clamp(magnitude / m_smoothedMaxMagnitude, 0.0f, 1.0f);
         normalizedMagnitude = pow(normalizedMagnitude, 0.5f);
       }
       else {
@@ -352,6 +356,7 @@ double StaggeredGrid::backtraceAndSampleV(Velocity2D velocity, glm::vec2 positio
 }
 
 //pass in velocityatdensity
+
 double StaggeredGrid::backtraceAndSampleDensity(Velocity2D velocity, glm::vec2 position){
   float minX = 0.5f * m_dx;
   float maxX =  (m_nx - 0.5f) * m_dx;
