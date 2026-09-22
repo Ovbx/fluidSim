@@ -37,7 +37,7 @@ const size_t cubeEdgeIndexCount = sizeof(edgeIndices) / sizeof(edgeIndices[0]);
 
 
 }
-namespace twoDimensionalArrow {
+namespace TwoDimensionalArrow {
     const Vertex vertices[] = {
         //rectangle shaft
         {{0.0f, -0.2f, 0.0f}, {1.0f, 0.0f, 0.0f}}, //bottom left

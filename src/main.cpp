@@ -35,13 +35,12 @@ int main(int argc, char ** argv)
 {
   std::filesystem::path p1 = argv[0];
   std::filesystem::path shaderDir = p1.parent_path() / "shaders";
-  std::cout << shaderDir << std::endl;
   std::filesystem::path meshVertexPath = shaderDir / "mesh.vert";
   std::filesystem::path meshFillPath = shaderDir / "meshFill.frag";
   std::filesystem::path meshOutlinePath = shaderDir / "meshOutline.frag";
   std::filesystem::path arrow2dVertexPath = shaderDir / "arrow2d.vert";
   std::filesystem::path arrow2dFragmentPath = shaderDir / "arrow2d.frag";
-    //creates window: width, height, name, monitor, share
+    //creates window: width, height, name
     int width = 1280;
     int height = 1080;
 
@@ -64,13 +63,13 @@ int main(int argc, char ** argv)
         Square::cubeEdgeIndexCount
     );
     Mesh arrow(
-        twoDimensionalArrow::vertices,
-        twoDimensionalArrow::vertexCount,
-        twoDimensionalArrow::indices,
-        twoDimensionalArrow::indexCount
+        TwoDimensionalArrow::vertices,
+        TwoDimensionalArrow::vertexCount,
+        TwoDimensionalArrow::indices,
+        TwoDimensionalArrow::indexCount
     );
 
-    //shaders
+    //shaders takes paths
     Shader shader(
         meshVertexPath,
         meshFillPath
@@ -92,13 +91,14 @@ int main(int argc, char ** argv)
     //rendering
     initRenderState();
 
-    //camera
+    //camera: target position, initial distance from, yaw (angle left right), pitch (angle up down)
     Camera camera(
         target,
         distance,
         yaw,
         pitch
     );
+    //handle's allow interaction with the window and camera
     GLFWwindow* handle = window.getHandle();
     WindowContext context {
       &window,
@@ -109,21 +109,26 @@ int main(int argc, char ** argv)
     glfwSetCursorPosCallback(handle, mouseCallback);
     glfwSetScrollCallback(handle, scrollCallback);
 
-    //StaggeredGrid
-    int nx = 128;
-    int ny = 128;
+    //fluid set up
+    int nx = 32;
+    int ny = 32;
     double dt = 0.16;
     double gridSpacing = 1.0;
+    //nx/ny amount of grids in x and y dir, dt iteration amount per while loop, gridSpacing physical spacing between the grids.
     StaggeredGrid grid(
       nx,
       ny,
       dt,
       gridSpacing
     );
+    //inputs for displaySolver
     float worldSize = 1.0f;
     float minScale = 0.005f;
     float maxScale = 0.018f;
+
+    //For instance count
     int numberOfValuesPerInstance = 5;
+
     std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
     arrow.configureInstancing(initialData.data(), initialData.size() / numberOfValuesPerInstance);
 
@@ -131,12 +136,15 @@ int main(int argc, char ** argv)
         processInput(handle);
         glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //fluid
         grid.fluidSolver();
         std::vector<float> frameData = grid.displaySolver(worldSize, minScale, maxScale);
         arrow.updateInstanceData(frameData.data(), frameData.size() / numberOfValuesPerInstance);
+        //drawing
         drawCubeWithOutline(&window, &camera, &shader, &outlineShader, &cubeMesh, &cubeOutline);
         drawArrowInstances(&window, &camera, &arrowInstancedShader, &arrow, nx * ny);
 
+        //updates the displayed image
         window.swapBuffers();
         //profiling using tracy
         FrameMark;
