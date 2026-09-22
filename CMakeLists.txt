@@ -72,8 +72,23 @@ add_executable(FluidSim
   src/Renderer.cpp
   src/Shader.cpp
   src/Window.cpp
+  shaders/mesh.vert
+  shaders/meshFill.frag
+  shaders/meshOutline.frag
+  shaders/arrow2d.vert
+  shaders/arrow2d.frag
+  shaders/arrow3d.vert
+  shaders/arrow3d.frag
 )
-
+add_custom_target(ShaderSources
+  ALL
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/shaders
+  $<TARGET_FILE_DIR:FluidSim>/shaders
+)
+add_dependencies(FluidSim
+  ShaderSources
+)
 #include directories
 target_include_directories(FluidSim PRIVATE include)
 

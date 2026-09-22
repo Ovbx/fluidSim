@@ -1,20 +1,36 @@
 #include "Shader.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <glad/glad.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+std::string readFile(const std::filesystem::path& path) {
+  std::ifstream file(path);
+  if (!file.is_open()) {
+    std::cerr << "Error: Could not opne the file at " << path << std::endl;
+    return "";
+  }
+  std::stringstream ss;
+  ss << file.rdbuf();
+  return ss.str();
+}
 
-Shader::Shader(const char* vertexSource, const char* fragmentSource) {
+Shader::Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
+  std::string vertexSource = readFile(vertexPath);
+  const char* vertexSourcePtr = vertexSource.c_str();
+  std::string fragmentSource = readFile(fragmentPath);
+  const char* fragmentSourcePtr = fragmentSource.c_str();
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     int success;
     int linkSuccess;
     char infoLog[512];
 
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexSourcePtr, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentSourcePtr, NULL);
 
     glCompileShader(vertexShader);
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
@@ -38,7 +54,7 @@ Shader::Shader(const char* vertexSource, const char* fragmentSource) {
     if (!linkSuccess) {
         char infoLog[512];
         glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
-        std::cout << "Error::Shader::PROGRAM::LINKING_FAILED" << infoLog << std::endl; 
+        std::cout << "Error::Shader::PROGRAM::LINKING_FAILED" << infoLog << std::endl;
     }
 
 

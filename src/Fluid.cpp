@@ -190,11 +190,11 @@ void StaggeredGrid::fluidSolver() {
   ZoneScoped;
   static bool forceApplied = false;
   if (!forceApplied) {
-    addForces(8, 8, 50, 15);
+    addForces(8, 8, 50, 30);
     forceApplied = false;
   }
   copyPreviousVelocities();
-  diffuseVelocity(0.001);
+  diffuseVelocity(0.1);
   project();
   advectVelocity();
   project();

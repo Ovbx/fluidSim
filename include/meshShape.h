@@ -61,3 +61,14 @@ namespace twoDimensionalArrow {
     const size_t indexCount = sizeof(indices) / sizeof(indices[0]);
 
 }
+// namespace threeDimensionalArrow{
+//   const Vertex vertices  {
+//     {{},{}},
+//   };
+//   const GLuint indices {
+
+//   };
+//   const size_t vertexCount = sizeof(vertices / sizeof(vertices[0]));
+//   const size_t indexCount = sizeof(indices / sizeof(indices[0]));
+
+// }

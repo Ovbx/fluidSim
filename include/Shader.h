@@ -2,11 +2,12 @@
 #include <string>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <filesystem>
 
 class Shader {
 
-public: 
-    Shader(const char* vertexSource, const char* fragmentSource);
+public:
+    Shader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath);
     ~Shader();
 
     void useProgram();
@@ -14,8 +15,7 @@ public:
     GLuint getId() const;
 
 private:
-    GLuint m_ID;
-
+  GLuint m_ID;
 };
 
 

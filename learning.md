@@ -150,6 +150,9 @@ The whole flow:
 - 7. include directories to tell compiler where to find the header files at to build the FluidSim target `target_include_directories(FluidSim PRIVATE include)`, `PRIVATE` is the scope of the directory, `include` will be the path to the folder when we move the header files from our src over to include.
 - 8. Link the libraries that we are using using`target_link_libraries(FluidSim PRIVATE OpenGL::GL glad ${CMAKE_DL_LIBS} $<$<TARGET_EXISTS:glfw>:glfw> $<$<NOT:$<TARGET_EXISTS:glfw>>:glfw3   $<$<TARGET_EXISTS:glm::glm>:glm::glm> $<$<NOT:$<EXISTS:glm::glm>>:glm>)` `OpenGL:GL` links OpenGL, it locates the system's OpenGL headers and drivers. `glad` links the GLAD lib. `${CMAKE_DL_LIBS}` is CMake variable that changes according to what lib required on host plateform to load dynamic libs at runtime. The whole `$<$<` statment is a `fallback logic`. It evaluates if a `CMake target` named `glfw or glm` exists and links `glfw` or `glm::glm`. OR, if it doesn't exist, look for `glfw3` or the bare target name `glm` instead of the `namespace` one.
 - 9. If using` Windows`, set Microsoft's compiler to W4, Warning 4. Else, if compiling with `GCC` or some other compiler, use `-Wall, -Wextra, -pedantic, etc`. `target_compile_options(FluidSim PRIVATE "flags here")`
+- For OpenGL, if you want to create a shader program via external vertex and fragment shaders
 ## [September 2026] - [Measuring performance]
 - Turn on -O2/O3 optimization flag to make sure we get accurate results. O3 can cause larger binary sizes.
-- Use library like 
+- Use library like Tracy.
+- Be confused of what you're looking at for several hours.
+- Profit.

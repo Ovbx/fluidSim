@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,95 +15,7 @@
 #include "meshShape.h"
 #include "Fluid.h"
 #include "tracy/Tracy.hpp"
-//vertex stuff
-const char *vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
 
-
-out vec3 ourColor;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main()
-{
-    gl_Position = projection * view * model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    ourColor = aColor;
-
-}
-)";
-const char* instancedVertexShaderSource = R"(
-  #version 330 core
-  layout (location = 0) in vec3 aPos;
-  layout (location = 1) in vec3 aColor;
-  layout (location = 2) in vec4 instanceData;
-  layout (location = 3) in float colorT;
-
-  out vec3 ourColor;
-
-  uniform mat4 view;
-  uniform mat4 projection;
-
-  void main () {
-    vec3 blue = vec3(0, 0, 1);
-    vec3 green = vec3(0, 1, 0);
-    vec3 yellow = vec3(1, 1, 0);
-    vec3 red = vec3(1, 0, 0);
-
-    vec3 color;
-    if (colorT < 0.33) {
-      color = mix(blue, green, colorT / 0.33);
-    }
-    else if (colorT < 0.66) {
-      color = mix(green, yellow, (colorT - 0.33) / 0.33);
-    }
-    else {
-      color = mix(yellow, red, (colorT - 0.66) / 0.33);
-    }
-    ourColor = color;
-    float angle = instanceData.z;
-    float scale = instanceData.w;
-    float cosOfInstanceData = cos(angle);
-    float sinOfInstanceData = sin(angle);
-    mat2 rotation = mat2(cosOfInstanceData, sinOfInstanceData, -sinOfInstanceData, cosOfInstanceData);
-    vec2 rotatedPosition = (rotation * aPos.xy) * scale + instanceData.xy;
-    gl_Position = projection * view * vec4(rotatedPosition, aPos.z, 1.0);
-  }
-
-)";
-
-const char *fillFragmentShaderSource = R"(
-    #version 330 core
-    out vec4 FragColor;
-    in vec3 ourColor;
-
-    void main()
-    {
-        FragColor = vec4(ourColor, 0.1f);
-    }
-)";
-
-const char *outlineFragmentShaderSource = R"(
-    #version 330 core
-    out vec4 FragColor;
-
-    void main()
-    {
-        FragColor = vec4(0.0, 1.0, 0.0, 1.0);
-    }
-)";
-const char* arrowFillFragmentShaderSource = R"(
-  #version 330 core
-  out vec4 FragColor;
-  in vec3 ourColor;
-
-  void main() {
-    FragColor = vec4(ourColor, 1.0f);
-  }
-)";
 //variables
 const float red = 0.0f;
 const float green = 0.0f;
@@ -118,8 +31,16 @@ float distance = 10.0f;
 float yaw = 45.0f;
 float pitch = 0.0f;
 
-int main()
+int main(int argc, char ** argv)
 {
+  std::filesystem::path p1 = argv[0];
+  std::filesystem::path shaderDir = p1.parent_path() / "shaders";
+  std::cout << shaderDir << std::endl;
+  std::filesystem::path meshVertexPath = shaderDir / "mesh.vert";
+  std::filesystem::path meshFillPath = shaderDir / "meshFill.frag";
+  std::filesystem::path meshOutlinePath = shaderDir / "meshOutline.frag";
+  std::filesystem::path arrow2dVertexPath = shaderDir / "arrow2d.vert";
+  std::filesystem::path arrow2dFragmentPath = shaderDir / "arrow2d.frag";
     //creates window: width, height, name, monitor, share
     int width = 1280;
     int height = 1080;
@@ -151,20 +72,20 @@ int main()
 
     //shaders
     Shader shader(
-        vertexShaderSource,
-        fillFragmentShaderSource
+        meshVertexPath,
+        meshFillPath
     );
     Shader outlineShader(
-        vertexShaderSource,
-        outlineFragmentShaderSource
+        meshVertexPath,
+        meshOutlinePath
     );
     Shader arrowShader(
-      vertexShaderSource,
-      arrowFillFragmentShaderSource
+      meshVertexPath,
+      arrow2dFragmentPath
     );
     Shader arrowInstancedShader(
-      instancedVertexShaderSource,
-      arrowFillFragmentShaderSource
+      arrow2dVertexPath,
+      arrow2dFragmentPath
     );
     shader.useProgram();
 
@@ -201,7 +122,7 @@ int main()
     );
     float worldSize = 1.0f;
     float minScale = 0.005f;
-    float maxScale = 0.02f;
+    float maxScale = 0.018f;
     int numberOfValuesPerInstance = 5;
     std::vector<float> initialData = grid.displaySolver(worldSize, minScale, maxScale);
     arrow.configureInstancing(initialData.data(), initialData.size() / numberOfValuesPerInstance);
