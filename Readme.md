@@ -37,6 +37,14 @@ https://github.com/user-attachments/assets/ab583eec-2d14-435a-b3b0-c9c5d8746ebd
 ```
 fluidSim/
 ├── build/ (CMake, gitignored)
+├── shader/
+│   ├── arrow2d.frag
+│   ├── arrow2d.vert
+│   ├── arrow3d.frag
+│   ├── arrow3d.vert
+│   ├── mesh.vert
+│   ├── meshFill.frag
+│   ├── meshOutline.frag
 ├── include/
 │   ├── Window.h
 │   ├── Shader.h
