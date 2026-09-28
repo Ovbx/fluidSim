@@ -1,5 +1,5 @@
 #include "Fluid3D.h"
-#include <glm/glm.h>
+#include <glm/glm.hpp>
 #include <vector>
 
 StaggeredGrid3D::StaggeredGrid3D(int nx, int ny, int nz, double dt, double gridSpacing) {

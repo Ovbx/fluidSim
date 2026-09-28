@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glm/glm.h>
+#include <glm/glm.hpp>
 #include <vector>
 
 struct Velocity3D {
     double u, v, w;
-}
+};
 class StaggeredGrid3D {
 public:
     void setBndU();
@@ -52,7 +52,6 @@ private:
     inline int uCount(int nx, int ny, int nz) const {
         return (nx + 1) * (ny + 2) * (nz + 2);
     }
-
     inline int vCount(int nx, int ny, int nz) const {
         return (nx + 2) * (ny + 1) * (nz + 2);
     }
@@ -63,35 +62,38 @@ private:
     inline int indexCenter(int i, int j, int k) const {
         return (k+1)*(m_nx+2)*(m_ny+2) + (j+1)*(m_nx + 2) + (i+1);
     }
-
-    inline int indexU() const {
-        
+    inline int indexU(int i, int j, int k) const {
+        return (k+1) * (m_nx+1) * (m_ny+2) + (j+1)*(m_nx +1) + i;
     }
 
-    inline int indexV() const {
-
+    inline int indexV(int i, int j, int k) const {
+        return (k+1) * (m_nx+2) * (m_ny+1) + j * (m_nx + 2) + (i+1);    
     }
 
-    inline int indexW() const {
-
+    inline int indexW(int i, int j, int k) const {
+        return k * (m_nx+2) * (m_ny+2) + (j + 1) * (m_nx+2) + (i + 1);
     }
 
-    inline glm::vec2 cellToPosition () {
-
+    inline glm::vec3 cellToPosition (int i, int j, int k) {
+        glm::vec3 position = {(i + 0.5) * m_nx, (j+0.5) * m_ny, (k+0.5) * m_nz};
+        return position;
     }
 
-    inline glm::vec2 cellToUPosition() {
-
+    inline glm::vec3 cellToUPosition(int i, int j, int k) {
+        glm::vec3 position = {i * m_nx, (j+0.5) * m_ny, (k + 0.5) * m_nz};
+        return position;
     }
 
-    inline glm::vec2 celltoVPosition () {
-
+    inline glm::vec3 celltoVPosition (int i, int j, int k) {
+        glm::vec3 position = {(i+0.5) *m_nx, j * m_ny, (k+0.5) * m_nz};
+        return position;
     }
 
-    inline glm::vec2 cellToWPosition () {
-
+    inline glm::vec3 cellToWPosition (int i, int j, int k) {
+        glm::vec3 position = {(i + 0.5) * m_nx, (j+0.5) * m_ny, k * m_nz};
+        return position;
     }
 
 
     
-}
+};
