@@ -72,6 +72,7 @@ add_executable(FluidSim
   src/Renderer.cpp
   src/Shader.cpp
   src/Window.cpp
+  src/Fluid3D.cpp
   shaders/mesh.vert
   shaders/meshFill.frag
   shaders/meshOutline.frag

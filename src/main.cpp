@@ -110,8 +110,8 @@ int main(int argc, char ** argv)
     glfwSetScrollCallback(handle, scrollCallback);
 
     //fluid set up
-    int nx = 32;
-    int ny = 32;
+    int nx = 64;
+    int ny = 64;
     double dt = 0.16;
     double gridSpacing = 1.0;
     //nx/ny amount of grids in x and y dir, dt iteration amount per while loop, gridSpacing physical spacing between the grids.
