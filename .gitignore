@@ -4,7 +4,7 @@ output/*.exe
 output/*.dll
 output/*.o
 output/*.obj
-out/Debug
+out/
 
 # CMake generated files
 CMakeCache.txt
