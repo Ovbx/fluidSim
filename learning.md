@@ -156,3 +156,6 @@ The whole flow:
 - Use library like Tracy.
 - Be confused of what you're looking at for several hours.
 - Profit.
+## [September 2026] - [3D Fluid Sim]
+- The first part of the fluid simulation logic that would change drastically from the transition from 2D -> 3D is the laplacian discretization.
+- 

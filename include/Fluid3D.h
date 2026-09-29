@@ -16,8 +16,8 @@ public:
     void copyPreviousVelocities();
     void copyPreviousDensities();
     StaggeredGrid3D(int nx, int ny, int nz, double dt, double gridSpacing);
-    void addForces();
-    void diffuseVelocity();
+    void addForces(int i, int j, int k, double fx, double fy, double fz);
+    void diffuseVelocity(double diff);
     void project();
     void advectVelocity();
     void addDensity();
@@ -43,6 +43,8 @@ private:
     std::vector<double> m_vPrev;
     std::vector<double> m_wPrev;
     
+    int m_sweepCount = 10;
+    mutable float m_smoothedMagnitude = 0.0f;
     glm::vec3 cellToWorldPosition(int i, int j, int k, float worldSize);
     double sampleU(int i, int j, int k);
     double sampleV(int i, int j, int k);
@@ -71,14 +73,14 @@ private:
         return (nx + 2) * (ny + 2) * (nz + 1);
     }
     inline int indexCenter(int i, int j, int k) const {
-        return (k+1)*(m_nx+2)*(m_ny+2) + (j+1)*(m_nx + 2) + (i+1);
+        return (k+1)*(m_nx+2)*(m_ny+2) + (j+1) * (m_nx +2) + (i+1);
     }
     inline int indexU(int i, int j, int k) const {
         return (k+1) * (m_nx+1) * (m_ny+2) + (j+1)*(m_nx +1) + i;
     }
 
     inline int indexV(int i, int j, int k) const {
-        return (k+1) * (m_nx+2) * (m_ny+1) + j * (m_nx + 2) + (i+1);    
+        return (k+1) * (m_nx+2) * (m_ny+1) + j * (m_nx+2) + (i+1);
     }
 
     inline int indexW(int i, int j, int k) const {
