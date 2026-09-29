@@ -24,7 +24,9 @@ public:
     void diffuseDensity();
     void advectDensity();
     void fluidSolver();
-    
+    std::vector<float> displaySolver(float worldSize, float minScale, float maxScale);
+
+
 private:
     int m_nx, m_ny, m_nz;
     double m_dx, m_dy, m_dz, m_dt;
@@ -41,6 +43,15 @@ private:
     std::vector<double> m_vPrev;
     std::vector<double> m_wPrev;
     
+    glm::vec3 cellToWorldPosition(int i, int j, int k, float worldSize);
+    double sampleU(int i, int j, int k);
+    double sampleV(int i, int j, int k);
+    double sampleW(int i, int j, int k);
+    float computeAngle(double u, double v, double w);
+    float computeMagnitude(double u, double v, double w);
+    float findMaxMagnitude() const;
+    std::vector<float> buildInstanceData (float worldSize, float minScale, float maxScale) const;
+
     inline int densityCount(int nx, int ny, int nz) const {
         return (nx + 2) * (ny + 2) * (nz + 2);
     }

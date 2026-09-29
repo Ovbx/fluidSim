@@ -37,5 +37,38 @@ void StaggeredGrid3D::copyPreviousVelocities() {
 void StaggeredGrid3D::copyPreviousDensities() {
 
 }
+void StaggeredGrid3D::addForces() {
 
+}
 
+void StaggeredGrid3D::diffuseVelocity() {
+
+}
+
+void StaggeredGrid3D::project () {
+
+}
+
+void StaggeredGrid3D::advectVelocity() {
+
+}
+
+void StaggeredGrid3D::addDensity() {
+
+}
+
+void StaggeredGrid3D::diffuseDensity() {
+
+}
+
+void StaggeredGrid3D::advectDensity() {
+
+}
+
+void StaggeredGrid3D::fluidSolver() {
+
+}
+//std::vector<float> StaggeredGrid3D::displaySolver(float worldSize, float minScale, float maxScale) {
+//    
+//}
+//
